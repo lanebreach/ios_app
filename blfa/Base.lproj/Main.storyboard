@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Reports-->
+        <scene sceneID="hNz-n2-bh7">
+            <objects>
+                <viewController id="9pv-A4-QxB" customClass="MapViewController" customModule="blfa" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="tsR-hK-woN">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="E5J-ME-UC4">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                                <connections>
+                                    <outlet property="delegate" destination="9pv-A4-QxB" id="Gzl-jH-2Y8"/>
+                                </connections>
+                            </mapView>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="E5J-ME-UC4" firstAttribute="width" secondItem="tsR-hK-woN" secondAttribute="width" id="CLS-n8-Nk1"/>
+                            <constraint firstItem="E5J-ME-UC4" firstAttribute="centerX" secondItem="tsR-hK-woN" secondAttribute="centerX" id="IWC-tb-SzM"/>
+                            <constraint firstItem="E5J-ME-UC4" firstAttribute="centerY" secondItem="tsR-hK-woN" secondAttribute="centerY" id="d5v-GB-9lx"/>
+                            <constraint firstItem="E5J-ME-UC4" firstAttribute="height" secondItem="tsR-hK-woN" secondAttribute="height" id="oib-HX-32I"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="PQr-Ze-W5v"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Reports" image="first" id="acW-dT-cKf"/>
+                    <connections>
+                        <outlet property="mapView" destination="E5J-ME-UC4" id="9HL-rx-RHS"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="W5J-7L-Pyd" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="749.60000000000002" y="-320.68965517241384"/>
+        </scene>
+        <!--New Report-->
+        <scene sceneID="wg7-f3-ORb">
+            <objects>
+                <viewController id="8rJ-Kc-sve" customClass="NewReportViewController" customModule="blfa" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="QS5-Rx-YEW">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DuW-Gu-DQ3">
+                                <rect key="frame" x="68" y="44" width="237" height="237"/>
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" secondItem="DuW-Gu-DQ3" secondAttribute="height" multiplier="1:1" id="Ovq-zh-oar"/>
+                                </constraints>
+                            </view>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="K0m-MV-lSn">
+                                <rect key="frame" x="68" y="289" width="237" height="29"/>
+                                <segments>
+                                    <segment title="Uber/Lyft"/>
+                                    <segment title="Bus"/>
+                                    <segment title="Other"/>
+                                </segments>
+                            </segmentedControl>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="your email address" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="mXm-YJ-9v5">
+                                <rect key="frame" x="68" y="325" width="237" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="description" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6hU-FG-seT">
+                                <rect key="frame" x="68" y="363" width="237" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l2o-87-Qdm">
+                                <rect key="frame" x="116.5" y="444" width="142" height="30"/>
+                                <state key="normal" title="POST TEST REPORT"/>
+                                <connections>
+                                    <action selector="postTestReportWithSender:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="H1r-td-nUi"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="l2o-87-Qdm" firstAttribute="centerX" secondItem="O1u-W8-tvY" secondAttribute="centerX" id="2aA-nL-agD"/>
+                            <constraint firstItem="mXm-YJ-9v5" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="8hW-s0-Xf1"/>
+                            <constraint firstItem="6hU-FG-seT" firstAttribute="top" secondItem="mXm-YJ-9v5" secondAttribute="bottom" constant="8" id="98h-bF-8jC"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="6hU-FG-seT" secondAttribute="trailing" constant="70" id="CWc-O0-kcZ"/>
+                            <constraint firstItem="K0m-MV-lSn" firstAttribute="top" secondItem="DuW-Gu-DQ3" secondAttribute="bottom" constant="8" id="DqQ-to-g2M"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="DuW-Gu-DQ3" secondAttribute="trailing" constant="70" id="IVG-OM-JBt"/>
+                            <constraint firstItem="K0m-MV-lSn" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="OUa-Ky-Tgc"/>
+                            <constraint firstItem="6hU-FG-seT" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="QXv-MM-8fz"/>
+                            <constraint firstItem="DuW-Gu-DQ3" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" constant="24" id="Qn6-as-n9n"/>
+                            <constraint firstItem="l2o-87-Qdm" firstAttribute="top" secondItem="6hU-FG-seT" secondAttribute="bottom" constant="51" id="bCV-nq-53Y"/>
+                            <constraint firstItem="mXm-YJ-9v5" firstAttribute="top" secondItem="K0m-MV-lSn" secondAttribute="bottom" constant="8" id="moJ-NC-CgZ"/>
+                            <constraint firstItem="DuW-Gu-DQ3" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="rJb-Gz-IQe"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="mXm-YJ-9v5" secondAttribute="trailing" constant="70" id="v8h-0b-T5o"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="K0m-MV-lSn" secondAttribute="trailing" constant="70" id="xBt-ii-gR5"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="O1u-W8-tvY"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="New Report" image="second" id="cPa-gy-q4n"/>
+                    <connections>
+                        <outlet property="descriptionTextField" destination="6hU-FG-seT" id="yGW-tr-LrM"/>
+                        <outlet property="emailTextField" destination="mXm-YJ-9v5" id="kZb-K1-Z66"/>
+                        <outlet property="postReportButton" destination="l2o-87-Qdm" id="jGM-lR-tmu"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4Nw-L8-lE0" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="749.60000000000002" y="359.37031484257875"/>
+        </scene>
+        <!--Tab Bar Controller-->
+        <scene sceneID="yl2-sM-qoP">
+            <objects>
+                <tabBarController id="49e-Tb-3d3" sceneMemberID="viewController">
+                    <tabBar key="tabBar" contentMode="scaleToFill" id="W28-zg-YXA">
+                        <rect key="frame" x="0.0" y="975" width="768" height="49"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="9pv-A4-QxB" kind="relationship" relationship="viewControllers" id="u7Y-xg-7CH"/>
+                        <segue destination="8rJ-Kc-sve" kind="relationship" relationship="viewControllers" id="lzU-1b-eKA"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="HuB-VB-40B" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="0.0" y="0.0"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="first" width="30" height="30"/>
+        <image name="second" width="30" height="30"/>
+    </resources>
+</document>
