@@ -51,6 +51,8 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to post the report to 311</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This allows you to take pictures of lane blockages.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
