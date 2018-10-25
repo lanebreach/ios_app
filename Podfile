@@ -7,6 +7,7 @@ target 'blfa' do
 
   # Pods for blfa
   pod 'AWSCore', '~> 2.6.13'
+  pod 'AWSS3', '~> 2.6.0'
   pod 'AWSDynamoDB'
   pod 'ReactiveCocoa', '~> 8.0'
 end

@@ -2,6 +2,8 @@ PODS:
   - AWSCore (2.6.31)
   - AWSDynamoDB (2.6.31):
     - AWSCore (= 2.6.31)
+  - AWSS3 (2.6.31):
+    - AWSCore (= 2.6.31)
   - ReactiveCocoa (8.0.0):
     - ReactiveSwift (~> 4.0)
   - ReactiveSwift (4.0.0):
@@ -11,12 +13,14 @@ PODS:
 DEPENDENCIES:
   - AWSCore (~> 2.6.13)
   - AWSDynamoDB
+  - AWSS3 (~> 2.6.0)
   - ReactiveCocoa (~> 8.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - AWSCore
     - AWSDynamoDB
+    - AWSS3
     - ReactiveCocoa
     - ReactiveSwift
     - Result
@@ -24,10 +28,11 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   AWSCore: c7abfb87ef802d1c4b5dd56db64ac8b4a7823ef0
   AWSDynamoDB: eb3eb7d49b14f1e523afa80373a8ab0fbde935a9
+  AWSS3: 5647e89f9ac8e7033f3e5507dbb3eccc37f82b75
   ReactiveCocoa: 87cb64d78424d749a0bbfd9b07e4825e8d834066
   ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
   Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
 
-PODFILE CHECKSUM: 682453f8daa84b5a5dd77dd7ef81f75eca7b0d02
+PODFILE CHECKSUM: ca25962008b4cb3515ba4ccacfff0129ab4ba7ec
 
 COCOAPODS: 1.6.0.beta.1
