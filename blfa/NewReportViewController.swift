@@ -6,6 +6,7 @@
 //  Copyright © 2018 Dale Low. All rights reserved.
 //
 
+import AWSS3
 import UIKit
 import CoreLocation
 import ReactiveCocoa
@@ -78,9 +79,51 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
     }
     
+    func uploadImage(with data: Data, filename: String, completion: @escaping (Error?) -> Void) {
+        let expression = AWSS3TransferUtilityUploadExpression()
+//        expression.progressBlock = progressBlock
+        
+        let completionHandler: AWSS3TransferUtilityUploadCompletionHandlerBlock = { (task, error) -> Void in
+            DispatchQueue.main.async(execute: {
+                if let error = error {
+                    print("completionHandler failed with error: \(error)")
+                    completion(error)
+                }
+//                else if (self.progressView.progress != 1.0) {
+//                    print("Error: Failed - Likely due to invalid region / filename")
+//                }
+                else {
+                    print("completionHandler success")
+                    completion(nil)
+                }
+            })
+        }
+
+        let transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: "USWest1S3TransferUtility")
+        transferUtility.uploadData(
+            data,
+            bucket: "lane-breach",
+            key: "311-sf/temp-images/\(filename).png",
+            contentType: "image/png",
+            expression: expression,
+            completionHandler: completionHandler).continueWith { (task) -> AnyObject? in
+                if let error = task.error {
+                    print("uploadData failed with error: \(error)")
+                    completion(error)
+                }
+                
+                if let _ = task.result {
+                    print("uploadData starting")
+                    // Do something with uploadTask.
+                }
+                
+                return nil;
+        }
+    }
+    
     //MARK:- Lifecycle
     override func viewDidLoad() {
-        // TODO - need to capture image from camera (or roll) and POST to s3 bucket
+        // TODO - force user to take a picture
         self.imageView.image = UIImage.init(imageLiteralResourceName: "block_example")
         
         // TODO - always use our company account or allow users to provide their own account (or both?)
@@ -117,6 +160,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // get a new location
         self.viewModel.currentLocation.value = nil
         
+        // TODO - this gets called after an image is selected too, so we probably want to disable that
         if CLLocationManager.locationServicesEnabled() == true {
             if CLLocationManager.authorizationStatus() == .restricted || CLLocationManager.authorizationStatus() == .denied ||  CLLocationManager.authorizationStatus() == .notDetermined {
                 self.locationManager.requestWhenInUseAuthorization()
@@ -166,7 +210,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     @IBAction func postTestReport(sender: UIButton) {
-        guard let email = emailTextField.text, let description = descriptionTextField.text else {
+        guard let email = emailTextField.text, let description = descriptionTextField.text, let image = self.imageView.image else {
             return
         }
         
@@ -181,92 +225,99 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             return
         }
         
-        // TODO - take picture! or get from photo album...
-        // TODO - how to POST the image? using multipart?
-        // TODO - need API key for prod
-        // TODO - get image classification from user now, and post to our DB (match it up with service request ID - need
-        //      to call GET service_request_id from a token)
-
-        // TODO - do we need: address_string, device_id, account_id, first_name, last_name, phone, media_url,
-        //        attribute[txtModel], attribute[txtReg], attribute[txtColor]
+        // TODO - new image categorization:
+        //  (truck) delivery, moving, fedex, ups, usps
+        //  bus
+        //  uber/lyft or taxi
+        //  other - let user enter optional text to replace "other" (maybe)
         
-        // TODO - get real URL after uploading image to S3
-        let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/images/9218274.png"
+        // TODO - concatenate category with optional description when POSTing (ex: [category] <description>)
         
-        let parameters = [
-            "api_key": "6a8b90bfef1ef751b2d161679f936b6e",  // dev
-            "service_code": "5a6b5ac2d0521c1134854b01",
-            "lat": String(currentLocation.latitude),
-            "long": String(currentLocation.longitude),
-            "email": email,
-            "media_url": mediaUrl,
-            "description": (description.count) > 0 ? description : "Blocked bicycle lane",
-            "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
-        ]
-        
-        // create the form URL-encoded string for the params
-        var postString: String = ""
-        var first = true
-        for (key, value) in parameters {
-            let escapedString = value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-            
-            if first {
-                first = false
-            } else {
-                postString += "&"
-            }
-            postString += "\(key)=\(escapedString)"
-        }
-        
-        // POST it
-        let url = URL(string: "http://mobile311-dev.sfgov.org/open311/v2/requests.json")!
-        var request = URLRequest(url: url)
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
-        request.httpBody = postString.data(using: .utf8)
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error != nil ? "error=\(error!)" : "no data")
-                
-                self.showSimpleAlertWithOK(error != nil ? "ERROR: \(error!)" : "ERROR: no data in response")
+        let filename = UUID().uuidString
+        self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
+            if error != nil {
+                print("uploadImage failed with \(error!)")
                 return
             }
-            
-            // check for 201 CREATED
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
-                print("statusCode should be 201, but is \(httpStatus.statusCode)")
-                print("response = \(httpStatus)")
 
-                self.showSimpleAlertWithOK("ERROR: bad HTTP response code: \(httpStatus.statusCode)")
-                return
-            }
+            // TODO - send the mediaUrl from uploadImage()
+            let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
             
-            if let responseString = String(data: data, encoding: .utf8) {
-                // looks like: responseString = [{"token":"5bc6c0f5ff031d6f5b335df0"}]
-                print("responseString = \(responseString)")
+            let parameters = [
+                "api_key": Keys.apiKey,
+                "service_code": "5a6b5ac2d0521c1134854b01",
+                "lat": String(currentLocation.latitude),
+                "long": String(currentLocation.longitude),
+                "email": email,
+                "media_url": mediaUrl,
+                "description": (description.count) > 0 ? description : "Blocked bicycle lane",
+                "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
+            ]
+            
+            // create the form URL-encoded string for the params
+            var postString: String = ""
+            var first = true
+            for (key, value) in parameters {
+                let escapedString = value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
                 
-                // check if it's a token
-                let json = try? JSONSerialization.jsonObject(with: data, options: [])
-                if let dictionary = json as? [[String: Any]] {
-                    if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
-                        print("serviceRequestId: \(serviceRequestId)")
-                        self.showSimpleAlertWithOK("New request submitted to 311 with service request ID \(serviceRequestId)")
-                    } else if let token = dictionary[0]["token"] as? String {
-                        self.showSimpleAlertWithOK("New request submitted to 311 with token \(token)")
-                    } else {
-                        self.showSimpleAlertWithOK("New request submitted to 311 but we didn't get a service request ID or token")
-                    }
+                if first {
+                    first = false
                 } else {
-                    self.showSimpleAlertWithOK("New request submitted to 311 but the response was malformed")
+                    postString += "&"
+                }
+                postString += "\(key)=\(escapedString)"
+            }
+            
+            // POST it
+            let url = URL(string: "http://mobile311-dev.sfgov.org/open311/v2/requests.json")!
+            var request = URLRequest(url: url)
+            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+            request.httpMethod = "POST"
+            request.httpBody = postString.data(using: .utf8)
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                    print(error != nil ? "error=\(error!)" : "no data")
+                    
+                    self.showSimpleAlertWithOK(error != nil ? "ERROR: \(error!)" : "ERROR: no data in response")
+                    return
+                }
+                
+                // check for 201 CREATED
+                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
+                    print("statusCode should be 201, but is \(httpStatus.statusCode)")
+                    print("response = \(httpStatus)")
+                    
+                    self.showSimpleAlertWithOK("ERROR: bad HTTP response code: \(httpStatus.statusCode)")
+                    return
+                }
+                
+                if let responseString = String(data: data, encoding: .utf8) {
+                    // looks like: responseString = [{"token":"5bc6c0f5ff031d6f5b335df0"}]
+                    print("responseString = \(responseString)")
+                    
+                    // check if it's a token
+                    let json = try? JSONSerialization.jsonObject(with: data, options: [])
+                    if let dictionary = json as? [[String: Any]] {
+                        if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
+                            print("serviceRequestId: \(serviceRequestId)")
+                            self.showSimpleAlertWithOK("New request submitted to 311 with service request ID \(serviceRequestId)")
+                        } else if let token = dictionary[0]["token"] as? String {
+                            self.showSimpleAlertWithOK("New request submitted to 311 with token \(token)")
+                        } else {
+                            self.showSimpleAlertWithOK("New request submitted to 311 but we didn't get a service request ID or token")
+                        }
+                    } else {
+                        self.showSimpleAlertWithOK("New request submitted to 311 but the response was malformed")
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    // keep email, but clear text
+                    self.descriptionTextField.text = ""
                 }
             }
-            
-            DispatchQueue.main.async {
-                // keep email, but clear text
-                self.descriptionTextField.text = ""
-            }
+            task.resume()
         }
-        task.resume()
     }
     
     //MARK:- CLLocationManager delegate methods

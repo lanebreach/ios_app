@@ -7,15 +7,23 @@
 //
 
 import UIKit
+import AWSDynamoDB
+import AWSS3
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // credit: https://stackoverflow.com/questions/32111029/download-secure-file-from-s3-server-using-accesskey-and-secretkey
+        let credentialsProvider = AWSStaticCredentialsProvider(accessKey: Keys.accessKey, secretKey: Keys.secretKey)
+        let configuration = AWSServiceConfiguration(region: .USWest2, credentialsProvider: credentialsProvider)
+        AWSServiceManager.default().defaultServiceConfiguration = configuration
+
+        // need a separate config for S3 since the lane-breach bucket is in a different region
+        let configurationUSWest1 = AWSServiceConfiguration(region: .USWest1, credentialsProvider: credentialsProvider)
+        AWSS3TransferUtility.register(with: configurationUSWest1!, forKey: "USWest1S3TransferUtility")
+        
         return true
     }
 
@@ -40,7 +48,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
-
 }
 

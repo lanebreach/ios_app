@@ -62,11 +62,6 @@ class MapViewController: UIViewController, MKMapViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // credit: https://stackoverflow.com/questions/32111029/download-secure-file-from-s3-server-using-accesskey-and-secretkey
-        let credentialsProvider = AWSStaticCredentialsProvider(accessKey: "AKIAI7N3353V6SAILMXQ", secretKey: "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")
-        let configuration = AWSServiceConfiguration(region: .USWest2, credentialsProvider: credentialsProvider)
-        AWSServiceManager.default().defaultServiceConfiguration = configuration
         
         let dynamoDBObjectMapper = AWSDynamoDBObjectMapper.default()
         let resultsBlock = { (task: AWSTask<AWSDynamoDBPaginatedOutput>) -> Any? in
