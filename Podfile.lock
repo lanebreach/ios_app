@@ -4,6 +4,7 @@ PODS:
     - AWSCore (= 2.6.31)
   - AWSS3 (2.6.31):
     - AWSCore (= 2.6.31)
+  - Mapbox-iOS-SDK (4.6.0)
   - ReactiveCocoa (8.0.0):
     - ReactiveSwift (~> 4.0)
   - ReactiveSwift (4.0.0):
@@ -14,6 +15,7 @@ DEPENDENCIES:
   - AWSCore (~> 2.6.13)
   - AWSDynamoDB
   - AWSS3 (~> 2.6.0)
+  - Mapbox-iOS-SDK (~> 4.6)
   - ReactiveCocoa (~> 8.0)
 
 SPEC REPOS:
@@ -21,6 +23,7 @@ SPEC REPOS:
     - AWSCore
     - AWSDynamoDB
     - AWSS3
+    - Mapbox-iOS-SDK
     - ReactiveCocoa
     - ReactiveSwift
     - Result
@@ -29,10 +32,11 @@ SPEC CHECKSUMS:
   AWSCore: c7abfb87ef802d1c4b5dd56db64ac8b4a7823ef0
   AWSDynamoDB: eb3eb7d49b14f1e523afa80373a8ab0fbde935a9
   AWSS3: 5647e89f9ac8e7033f3e5507dbb3eccc37f82b75
+  Mapbox-iOS-SDK: 204c04713477cf2a88c52c5a8eed1790eb75a02a
   ReactiveCocoa: 87cb64d78424d749a0bbfd9b07e4825e8d834066
   ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
   Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
 
-PODFILE CHECKSUM: ca25962008b4cb3515ba4ccacfff0129ab4ba7ec
+PODFILE CHECKSUM: 3b243e71f9895793efd470f6a43ef35d56b957ae
 
 COCOAPODS: 1.6.0.beta.1

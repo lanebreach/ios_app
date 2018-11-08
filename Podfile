@@ -10,4 +10,5 @@ target 'blfa' do
   pod 'AWSS3', '~> 2.6.0'
   pod 'AWSDynamoDB'
   pod 'ReactiveCocoa', '~> 8.0'
+  pod 'Mapbox-iOS-SDK', '~> 4.6'
 end
