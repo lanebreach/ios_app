@@ -9,6 +9,33 @@
 import UIKit
 import AWSDynamoDB
 import MapKit
+import Mapbox
+
+#if true
+class MapViewController: UIViewController {
+    @IBOutlet weak var mapView: MKMapView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // hide the old map view since we're not using it right now
+        self.mapView.isHidden = true
+        
+        let url = URL(string: "mapbox://styles/agaesser/cjn5lb26b0gty2rnr3laj0ljd")
+        let mapView = MGLMapView(frame: view.bounds, styleURL: url)
+        mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(mapView)
+
+        DispatchQueue.main.async {
+            // set the center to Twin Peaks
+            // note: setting the center doesn't seem to work after MGLMapView construction
+            mapView.setCenter(CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577), zoomLevel: 11, animated: true)
+        }
+    }
+}
+#endif
+
+#if false
 
 class BikeLaneReport : AWSDynamoDBObjectModel, AWSDynamoDBModeling  {
     @objc var service_request_id:String?
@@ -126,8 +153,9 @@ class MapViewController: UIViewController, MKMapViewDelegate {
 
         // example 2 (works):
         // fetch reports starting 4 weeks ago
-        let date = Date(timeIntervalSinceNow: -28*86400)
-        
+//        let date = Date(timeIntervalSinceNow: -28*86400)
+        let date = Date(timeIntervalSinceNow: -60*86400)
+
         let RFC3339DateFormatter = DateFormatter()
         RFC3339DateFormatter.locale = Locale(identifier: "en_US_POSIX")
         RFC3339DateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -188,3 +216,4 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         // Dispose of any resources that can be recreated.
     }
 }
+#endif
