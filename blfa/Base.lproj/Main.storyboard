@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14283.14"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -89,15 +89,13 @@
                                     <constraint firstItem="lkl-DI-qfs" firstAttribute="leading" secondItem="ID6-60-cVW" secondAttribute="leading" id="lua-BG-gIA"/>
                                 </constraints>
                             </view>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="K0m-MV-lSn">
-                                <rect key="frame" x="68" y="349" width="237" height="29"/>
-                                <segments>
-                                    <segment title="Uber"/>
-                                    <segment title="Lyft"/>
-                                    <segment title="Other"/>
-                                </segments>
-                            </segmentedControl>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="your email address" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="mXm-YJ-9v5">
+                                <rect key="frame" x="68" y="347" width="237" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="category" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="j5e-0M-LMS">
                                 <rect key="frame" x="68" y="385" width="237" height="30"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -126,32 +124,33 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="mXm-YJ-9v5" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="8hW-s0-Xf1"/>
-                            <constraint firstItem="6hU-FG-seT" firstAttribute="top" secondItem="mXm-YJ-9v5" secondAttribute="bottom" constant="8" id="98h-bF-8jC"/>
+                            <constraint firstItem="mXm-YJ-9v5" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="8jB-li-Pp6"/>
+                            <constraint firstItem="mXm-YJ-9v5" firstAttribute="top" secondItem="ID6-60-cVW" secondAttribute="bottom" constant="24" id="CR0-UK-NaK"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="6hU-FG-seT" secondAttribute="trailing" constant="70" id="CWc-O0-kcZ"/>
                             <constraint firstItem="l2o-87-Qdm" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="Civ-oA-wHi"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="DuW-Gu-DQ3" secondAttribute="trailing" constant="70" id="IVG-OM-JBt"/>
-                            <constraint firstItem="K0m-MV-lSn" firstAttribute="top" secondItem="ID6-60-cVW" secondAttribute="bottom" constant="26" id="IyF-MX-iBD"/>
-                            <constraint firstItem="K0m-MV-lSn" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="OUa-Ky-Tgc"/>
+                            <constraint firstItem="6hU-FG-seT" firstAttribute="top" secondItem="j5e-0M-LMS" secondAttribute="bottom" constant="8" id="J0l-V4-pzf"/>
                             <constraint firstItem="6hU-FG-seT" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="QXv-MM-8fz"/>
                             <constraint firstItem="DuW-Gu-DQ3" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" constant="24" id="Qn6-as-n9n"/>
+                            <constraint firstItem="j5e-0M-LMS" firstAttribute="top" secondItem="mXm-YJ-9v5" secondAttribute="bottom" constant="8" id="RpB-06-Q54"/>
                             <constraint firstItem="ID6-60-cVW" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="SRL-08-kVt"/>
+                            <constraint firstItem="j5e-0M-LMS" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="T6E-zy-DB1"/>
                             <constraint firstItem="ID6-60-cVW" firstAttribute="top" secondItem="DuW-Gu-DQ3" secondAttribute="bottom" constant="6" id="Tpn-aN-QJ7"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="l2o-87-Qdm" secondAttribute="trailing" constant="70" id="Xp8-xF-hzC"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="ID6-60-cVW" secondAttribute="trailing" constant="67" id="Xwq-0V-d5l"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="j5e-0M-LMS" secondAttribute="trailing" constant="70" id="bdX-Pl-J2K"/>
                             <constraint firstItem="xfL-Rp-2Rs" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="e7x-9g-NWv"/>
                             <constraint firstItem="xfL-Rp-2Rs" firstAttribute="top" secondItem="6hU-FG-seT" secondAttribute="bottom" constant="8" id="eNJ-LC-xhd"/>
-                            <constraint firstItem="mXm-YJ-9v5" firstAttribute="top" secondItem="K0m-MV-lSn" secondAttribute="bottom" constant="8" id="moJ-NC-CgZ"/>
                             <constraint firstItem="l2o-87-Qdm" firstAttribute="top" secondItem="xfL-Rp-2Rs" secondAttribute="bottom" constant="25" id="rIK-va-Pis"/>
                             <constraint firstItem="DuW-Gu-DQ3" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="rJb-Gz-IQe"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="xfL-Rp-2Rs" secondAttribute="trailing" constant="70" id="rSB-3t-9xp"/>
-                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="mXm-YJ-9v5" secondAttribute="trailing" constant="70" id="v8h-0b-T5o"/>
-                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="K0m-MV-lSn" secondAttribute="trailing" constant="70" id="xBt-ii-gR5"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="mXm-YJ-9v5" secondAttribute="trailing" constant="70" id="twc-I9-eR5"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="O1u-W8-tvY"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="New Report" image="second" id="cPa-gy-q4n"/>
                     <connections>
+                        <outlet property="categoryTextField" destination="j5e-0M-LMS" id="EDF-Gr-KKJ"/>
                         <outlet property="descriptionTextField" destination="6hU-FG-seT" id="yGW-tr-LrM"/>
                         <outlet property="emailTextField" destination="mXm-YJ-9v5" id="kZb-K1-Z66"/>
                         <outlet property="imageView" destination="DuW-Gu-DQ3" id="WcA-qg-Ega"/>

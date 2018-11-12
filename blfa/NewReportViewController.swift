@@ -15,24 +15,33 @@ import Result
 
 class SampleViewModel {
     let emailAddress: MutableProperty<String>
-    let description: MutableProperty<String>
+    let category: MutableProperty<String>
     let currentLocation: MutableProperty<CLLocationCoordinate2D?>
+    
+    var categorySignal: Signal<String, NoError>
     var okToSendSignal: Signal<Bool, NoError>
     var locationStatusSignal: Signal<String, NoError>
     
+    let categories: [String] = ["Delivery truck", "Moving truck", "FedEx", "UPS", "USPS",
+                                "Bus",
+                                "Uber", "Lyft", "Uber/Lyft",
+                                "Other"]    //  TODO - let user enter optional text to replace "other"?
+    
     init(_ email: String) {
         self.emailAddress = MutableProperty("")
-        self.description = MutableProperty("")
+        self.category = MutableProperty("")
         self.currentLocation = MutableProperty(nil)
         
+        self.categorySignal = self.category.signal
+        
         // output true if the email address has 3+ chars and we have a valid location
-        self.okToSendSignal = Signal.combineLatest(self.emailAddress.signal, self.description.signal, self.currentLocation.signal)
+        self.okToSendSignal = Signal.combineLatest(self.emailAddress.signal, self.category.signal, self.currentLocation.signal)
             .map { (arg) -> Bool in
                 
-                let (emailAddress, description, currentLocation) = arg
+                let (emailAddress, category, currentLocation) = arg
                 
-                print("emailAddress=\(emailAddress), description=\(description), currentLocation=\(currentLocation)")
-                return (emailAddress.count > 2) && (description.count > 1) && (currentLocation != nil)
+                print("emailAddress=\(emailAddress), category=\(category), currentLocation=\(String(describing: currentLocation))")
+                return (emailAddress.count > 2) && (category.count > 1) && (currentLocation != nil)
         }
         
         self.locationStatusSignal = self.currentLocation.signal
@@ -51,9 +60,12 @@ class SampleViewModel {
     }
 }
 
-class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
+    UIPickerViewDataSource, UIPickerViewDelegate {
+
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var categoryTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
     @IBOutlet weak var locationTextField: UITextField!
     @IBOutlet weak var postReportButton: UIButton!
@@ -61,7 +73,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var viewModel: SampleViewModel!
     var locationManager = CLLocationManager()
     var keyboardHeight: CGFloat = 0
-
+    
     //MARK:- Internal methods
     private func showSimpleAlertWithOK(_ message: String) {
         let alertFunc: () -> Void = {
@@ -129,31 +141,49 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // TODO - always use our company account or allow users to provide their own account (or both?)
         viewModel = SampleViewModel("bikelanessf@gmail.com")
         self.emailTextField.text = self.viewModel.emailAddress.value
-
+        
+        // react to model changes
+        self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
         self.locationTextField.reactive.text <~ self.viewModel.locationStatusSignal
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
         // this is a hack to get the initial state without getting the viewmodel to do it somehow
         self.postReportButton.isEnabled = false
         
+        // update model based on view changes
 //        self.viewModel.emailAddress.value <~ self.emailTextField.reactive.continuousTextValues.map { $0 }
         self.emailTextField.reactive.continuousTextValues.observeValues { value in
             print("email: \(value!)")
             self.viewModel.emailAddress.value = value!
         }
         
-        self.descriptionTextField.reactive.continuousTextValues.observeValues { value in
-            print("description: \(value!)")
-            self.viewModel.description.value = value!
-        }
-        
         // TODO - disable take picture button if we don't have a camera (mostly for sim)
 
+        // category picker/toolbar
+        let picker = UIPickerView.init()
+        picker.dataSource = self
+        picker.delegate = self
+        picker.showsSelectionIndicator = true
+        self.categoryTextField.inputView = picker
+        
+        let toolBar = UIToolbar()
+        toolBar.barStyle = UIBarStyle.default
+        toolBar.isTranslucent = true
+        toolBar.sizeToFit()
+        
+        let spaceButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.plain,
+                                         target: self, action: #selector(NewReportViewController.donePicker(_:)))
+        
+        toolBar.setItems([spaceButton, doneButton], animated: false)
+        toolBar.isUserInteractionEnabled = true
+        
+        self.categoryTextField.inputAccessoryView = toolBar
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 
         super.viewDidLoad()
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         // TODO - also make sure that this handles app foregrounding
         
@@ -209,8 +239,12 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         present(vc, animated: true)
     }
     
+    @objc func donePicker(_ sender: Any) {
+        self.categoryTextField.resignFirstResponder()
+    }
+
     @IBAction func postTestReport(sender: UIButton) {
-        guard let email = emailTextField.text, let description = descriptionTextField.text, let image = self.imageView.image else {
+        guard let email = emailTextField.text, let image = self.imageView.image else {
             return
         }
         
@@ -224,15 +258,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             showSimpleAlertWithOK("missing email address")
             return
         }
-        
-        // TODO - new image categorization:
-        //  (truck) delivery, moving, fedex, ups, usps
-        //  bus
-        //  uber/lyft or taxi
-        //  other - let user enter optional text to replace "other" (maybe)
-        
-        // TODO - concatenate category with optional description when POSTing (ex: [category] <description>)
-        
+
+        // TODO: probably move into model
         let filename = UUID().uuidString
         self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
             if error != nil {
@@ -243,6 +270,10 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             // TODO - send the mediaUrl from uploadImage()
             let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
             
+            // concatenate category with optional description when POSTing (ex: [category] <description>)
+            var description: String = self.categoryTextField.text != nil ? "[\(self.categoryTextField.text!)] " : ""
+            description.append(contentsOf: (description.count) > 0 ? description : "Blocked bicycle lane")
+            
             let parameters = [
                 "api_key": Keys.apiKey,
                 "service_code": "5a6b5ac2d0521c1134854b01",
@@ -250,7 +281,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 "long": String(currentLocation.longitude),
                 "email": email,
                 "media_url": mediaUrl,
-                "description": (description.count) > 0 ? description : "Blocked bicycle lane",
+                "description": description,
                 "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
             ]
             
@@ -348,6 +379,24 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
         
         self.imageView.image = image
+    }
+    
+    //MARK:- UIPickerViewDataSource methods
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return self.viewModel.categories.count
+    }
+    
+    //MARK:- UIPickerViewDelegate methods
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return self.viewModel.categories[row]
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        self.viewModel.category.value = self.viewModel.categories[row]
     }
 }
 
