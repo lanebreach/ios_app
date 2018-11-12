@@ -54,7 +54,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This allows you to take pictures of lane blockages.</string>
 	<key>MGLMapboxAccessToken</key>
-	<string>pk.eyJ1IjoiYWdhZXNzZXIiLCJhIjoiY2puNDNlbnlrMDBjNjNrbWlvdXNibWJrOSJ9.w2Uu9bFYB2oi9cgmqlulUQ</string>
+	<string>not_used</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

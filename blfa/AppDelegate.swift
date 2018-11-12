@@ -9,6 +9,8 @@
 import UIKit
 import AWSDynamoDB
 import AWSS3
+import MapKit
+import Mapbox
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -24,6 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let configurationUSWest1 = AWSServiceConfiguration(region: .USWest1, credentialsProvider: credentialsProvider)
         AWSS3TransferUtility.register(with: configurationUSWest1!, forKey: "USWest1S3TransferUtility")
         
+        MGLAccountManager.accessToken = Keys.mapboxKey
+
         return true
     }
 

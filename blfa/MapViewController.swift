@@ -12,12 +12,13 @@ import MapKit
 import Mapbox
 
 #if true
+// show map from MapKit
 class MapViewController: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // hide the old map view since we're not using it right now
         self.mapView.isHidden = true
         
@@ -36,7 +37,7 @@ class MapViewController: UIViewController {
 #endif
 
 #if false
-
+// fetch data from AWS DynamoDB
 class BikeLaneReport : AWSDynamoDBObjectModel, AWSDynamoDBModeling  {
     @objc var service_request_id:String?
     @objc var supervisor_district:String?
