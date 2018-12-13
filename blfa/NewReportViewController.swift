@@ -16,6 +16,7 @@ import Result
 class SampleViewModel {
     let emailAddress: MutableProperty<String>
     let category: MutableProperty<String>
+    let haveImage: MutableProperty<Bool>
     let currentLocation: MutableProperty<CLLocationCoordinate2D?>
     
     var categorySignal: Signal<String, NoError>
@@ -30,18 +31,19 @@ class SampleViewModel {
     init(_ email: String) {
         self.emailAddress = MutableProperty("")
         self.category = MutableProperty("")
+        self.haveImage = MutableProperty(false)
         self.currentLocation = MutableProperty(nil)
         
         self.categorySignal = self.category.signal
         
-        // output true if the email address has 3+ chars and we have a valid location
-        self.okToSendSignal = Signal.combineLatest(self.emailAddress.signal, self.category.signal, self.currentLocation.signal)
+        // output true if the email address has 3+ chars and we have a valid category/image/location
+        self.okToSendSignal = Signal.combineLatest(self.emailAddress.signal, self.category.signal, self.haveImage.signal, self.currentLocation.signal)
             .map { (arg) -> Bool in
                 
-                let (emailAddress, category, currentLocation) = arg
+                let (emailAddress, category, haveImage, currentLocation) = arg
                 
-                print("emailAddress=\(emailAddress), category=\(category), currentLocation=\(String(describing: currentLocation))")
-                return (emailAddress.count > 2) && (category.count > 1) && (currentLocation != nil)
+                print("emailAddress=\(emailAddress), category=\(category), haveImage=\(haveImage), currentLocation=\(String(describing: currentLocation))")
+                return (emailAddress.count > 2) && (category.count > 1) && haveImage && (currentLocation != nil)
         }
         
         self.locationStatusSignal = self.currentLocation.signal
@@ -64,11 +66,15 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     UIPickerViewDataSource, UIPickerViewDelegate {
 
     @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var takePictureButton: UIButton!
+//    @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var categoryTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
-    @IBOutlet weak var locationTextField: UITextField!
+//    @IBOutlet weak var locationTextField: UITextField!
     @IBOutlet weak var postReportButton: UIButton!
+    
+    var emailTextField: UITextField = UITextField()     // TODO - this is currently hidden
+    var locationTextField: UITextField = UITextField()  // TODO - this is currently hidden
     
     var viewModel: SampleViewModel!
     var locationManager = CLLocationManager()
@@ -135,10 +141,15 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     //MARK:- Lifecycle
     override func viewDidLoad() {
-        // TODO - force user to take a picture
-        self.imageView.image = UIImage.init(imageLiteralResourceName: "block_example")
+        // Uncomment the line below to get a demo image
+        //self.imageView.image = UIImage.init(imageLiteralResourceName: "block_example")
         
-        // TODO - always use our company account or allow users to provide their own account (or both?)
+        // can't take pics using the sim
+        #if (targetEnvironment(simulator))
+            self.takePictureButton.isEnabled = false
+        #endif
+        
+        // TODO - add email config to profile screen
         viewModel = SampleViewModel("bikelanessf@gmail.com")
         self.emailTextField.text = self.viewModel.emailAddress.value
         
@@ -155,8 +166,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             print("email: \(value!)")
             self.viewModel.emailAddress.value = value!
         }
-        
-        // TODO - disable take picture button if we don't have a camera (mostly for sim)
 
         // category picker/toolbar
         let picker = UIPickerView.init()
@@ -272,7 +281,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             
             // concatenate category with optional description when POSTing (ex: [category] <description>)
             var description: String = self.categoryTextField.text != nil ? "[\(self.categoryTextField.text!)] " : ""
-            description.append(contentsOf: (description.count) > 0 ? description : "Blocked bicycle lane")
+            description.append(contentsOf: self.descriptionTextField.text ?? "Blocked bicycle lane")
             
             let parameters = [
                 "api_key": Keys.apiKey,
@@ -343,7 +352,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 }
                 
                 DispatchQueue.main.async {
-                    // keep email, but clear text
+                    // reset for the next submission
+                    self.imageView.image = nil
+                    self.viewModel.haveImage.value = false
                     self.descriptionTextField.text = ""
                 }
             }
@@ -379,6 +390,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
         
         self.imageView.image = image
+        
+        // tell the model that we have an image
+        self.viewModel.haveImage.value = true
     }
     
     //MARK:- UIPickerViewDataSource methods

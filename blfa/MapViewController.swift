@@ -13,7 +13,7 @@ import Mapbox
 
 #if true
 // show map from MapKit
-class MapViewController: UIViewController {
+class MapViewController: UIViewController, MGLMapViewDelegate {
     @IBOutlet weak var mapView: MKMapView!
     
     override func viewDidLoad() {
@@ -25,6 +25,7 @@ class MapViewController: UIViewController {
         let url = URL(string: "mapbox://styles/agaesser/cjn5lb26b0gty2rnr3laj0ljd")
         let mapView = MGLMapView(frame: view.bounds, styleURL: url)
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        mapView.delegate = self
         view.addSubview(mapView)
 
         DispatchQueue.main.async {
@@ -32,6 +33,22 @@ class MapViewController: UIViewController {
             // note: setting the center doesn't seem to work after MGLMapView construction
             mapView.setCenter(CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577), zoomLevel: 11, animated: true)
         }
+        
+        // add Twin Peaks to the map for, well, fun
+        let twinPeaks = MGLPointAnnotation()
+        twinPeaks.coordinate = CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577)
+        twinPeaks.title = "Twin Peaks"
+        twinPeaks.subtitle = "The best place to see the City"
+        mapView.addAnnotation(twinPeaks)
+    }
+    
+    func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
+        print("didFinishLoading")
+    }
+    
+    func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+        // Always allow callouts to popup when annotations are tapped.
+        return true
     }
 }
 #endif
