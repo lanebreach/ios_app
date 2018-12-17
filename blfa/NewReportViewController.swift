@@ -13,8 +13,9 @@ import ReactiveCocoa
 import ReactiveSwift
 import Result
 
-class SampleViewModel {
+class NewReportViewModel {
     let emailAddress: MutableProperty<String>
+    let description: MutableProperty<String>
     let category: MutableProperty<String>
     let haveImage: MutableProperty<Bool>
     let currentLocation: MutableProperty<CLLocationCoordinate2D?>
@@ -28,8 +29,9 @@ class SampleViewModel {
                                 "Uber", "Lyft", "Uber/Lyft",
                                 "Other"]    //  TODO - let user enter optional text to replace "other"?
     
-    init(_ email: String) {
+    init() {
         self.emailAddress = MutableProperty("")
+        self.description = MutableProperty("")
         self.category = MutableProperty("")
         self.haveImage = MutableProperty(false)
         self.currentLocation = MutableProperty(nil)
@@ -37,13 +39,13 @@ class SampleViewModel {
         self.categorySignal = self.category.signal
         
         // output true if the email address has 3+ chars and we have a valid category/image/location
-        self.okToSendSignal = Signal.combineLatest(self.emailAddress.signal, self.category.signal, self.haveImage.signal, self.currentLocation.signal)
+        self.okToSendSignal = Signal.combineLatest(self.category.signal, self.haveImage.signal, self.currentLocation.signal)
             .map { (arg) -> Bool in
                 
-                let (emailAddress, category, haveImage, currentLocation) = arg
+                let (category, haveImage, currentLocation) = arg
                 
-                print("emailAddress=\(emailAddress), category=\(category), haveImage=\(haveImage), currentLocation=\(String(describing: currentLocation))")
-                return (emailAddress.count > 2) && (category.count > 1) && haveImage && (currentLocation != nil)
+                print("category=\(category), haveImage=\(haveImage), currentLocation=\(String(describing: currentLocation))")
+                return (category.count > 1) && haveImage && (currentLocation != nil)
         }
         
         self.locationStatusSignal = self.currentLocation.signal
@@ -56,47 +58,26 @@ class SampleViewModel {
                 
                 return "Location: searching..."
         }
-        
-        // set this after configuring okToSendSignal so that this gets tracked as a change
-        self.emailAddress.value = email
     }
 }
 
 class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
-    UIPickerViewDataSource, UIPickerViewDelegate {
+    UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
 
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var takePictureButton: UIButton!
-//    @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var categoryTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
 //    @IBOutlet weak var locationTextField: UITextField!
     @IBOutlet weak var postReportButton: UIButton!
     
-    var emailTextField: UITextField = UITextField()     // TODO - this is currently hidden
     var locationTextField: UITextField = UITextField()  // TODO - this is currently hidden
     
-    var viewModel: SampleViewModel!
+    var viewModel: NewReportViewModel!
     var locationManager = CLLocationManager()
     var keyboardHeight: CGFloat = 0
     
-    //MARK:- Internal methods
-    private func showSimpleAlertWithOK(_ message: String) {
-        let alertFunc: () -> Void = {
-            let alert = UIAlertController(title: "Alert", message: message, preferredStyle: UIAlertControllerStyle.alert)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
-        }
-        
-        if Thread.isMainThread {
-            alertFunc()
-        } else {
-            DispatchQueue.main.async {
-                alertFunc()
-            }
-        }
-    }
-    
+    //MARK:- Internal methods    
     func uploadImage(with data: Data, filename: String, completion: @escaping (Error?) -> Void) {
         let expression = AWSS3TransferUtilityUploadExpression()
 //        expression.progressBlock = progressBlock
@@ -139,6 +120,27 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
     }
     
+    // credit: https://stackoverflow.com/questions/5427656/ios-uiimagepickercontroller-result-image-orientation-after-upload
+    func fixOrientation(img: UIImage) -> UIImage? {
+        let result: UIImage?
+        if img.imageOrientation == .up {
+            result = img
+        } else {
+            result = autoreleasepool { () -> UIImage? in
+                UIGraphicsBeginImageContextWithOptions(img.size, false, img.scale)
+                let rect = CGRect(x: 0, y: 0, width: img.size.width, height: img.size.height)
+                img.draw(in: rect)
+                
+                let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+                UIGraphicsEndImageContext()
+                
+                return normalizedImage
+            }
+        }
+        
+        return result
+    }
+    
     //MARK:- Lifecycle
     override func viewDidLoad() {
         // Uncomment the line below to get a demo image
@@ -149,9 +151,10 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             self.takePictureButton.isEnabled = false
         #endif
         
-        // TODO - add email config to profile screen
-        viewModel = SampleViewModel("bikelanessf@gmail.com")
-        self.emailTextField.text = self.viewModel.emailAddress.value
+        self.descriptionTextField.delegate = self
+        
+        // model
+        viewModel = NewReportViewModel()
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
@@ -159,14 +162,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
         // this is a hack to get the initial state without getting the viewmodel to do it somehow
         self.postReportButton.isEnabled = false
-        
-        // update model based on view changes
-//        self.viewModel.emailAddress.value <~ self.emailTextField.reactive.continuousTextValues.map { $0 }
-        self.emailTextField.reactive.continuousTextValues.observeValues { value in
-            print("email: \(value!)")
-            self.viewModel.emailAddress.value = value!
-        }
-
+                
         // category picker/toolbar
         let picker = UIPickerView.init()
         picker.dataSource = self
@@ -196,6 +192,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     override func viewDidAppear(_ animated: Bool) {
         // TODO - also make sure that this handles app foregrounding
         
+        // update the email addr
+        self.viewModel.emailAddress.value = UserDefaults.standard.string(forKey: "com.blfa.email") ?? ""
+        
         // get a new location
         self.viewModel.currentLocation.value = nil
         
@@ -208,7 +207,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             self.locationManager.delegate = self
             self.locationManager.startUpdatingLocation()
         } else {
-            self.showSimpleAlertWithOK("Please turn on location services to post a new report")
+            AppDelegate.showSimpleAlertWithOK(vc: self, "Please turn on location services to post a new report")
         }
     }
     
@@ -253,7 +252,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
 
     @IBAction func postTestReport(sender: UIButton) {
-        guard let email = emailTextField.text, let image = self.imageView.image else {
+        guard let image = self.imageView.image else {
             return
         }
         
@@ -263,11 +262,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             return
         }
         
-        if email.count < 3 {
-            showSimpleAlertWithOK("missing email address")
-            return
-        }
-
         // TODO: probably move into model
         let filename = UUID().uuidString
         self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
@@ -280,15 +274,15 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
             
             // concatenate category with optional description when POSTing (ex: [category] <description>)
-            var description: String = self.categoryTextField.text != nil ? "[\(self.categoryTextField.text!)] " : ""
-            description.append(contentsOf: self.descriptionTextField.text ?? "Blocked bicycle lane")
+            var description: String = self.viewModel.category.value.count != 0 ? "[\(self.viewModel.category.value)] " : ""
+            description.append(contentsOf: (self.viewModel.description.value.count) != 0 ? self.viewModel.description.value : "Blocked bicycle lane")
             
             let parameters = [
                 "api_key": Keys.apiKey,
                 "service_code": "5a6b5ac2d0521c1134854b01",
                 "lat": String(currentLocation.latitude),
                 "long": String(currentLocation.longitude),
-                "email": email,
+                "email": (self.viewModel.emailAddress.value.count != 0) ? self.viewModel.emailAddress.value : "bikelanessf@gmail.com",
                 "media_url": mediaUrl,
                 "description": description,
                 "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
@@ -318,7 +312,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 guard let data = data, error == nil else {                                                 // check for fundamental networking error
                     print(error != nil ? "error=\(error!)" : "no data")
                     
-                    self.showSimpleAlertWithOK(error != nil ? "ERROR: \(error!)" : "ERROR: no data in response")
+                    AppDelegate.showSimpleAlertWithOK(vc: self, error != nil ? "ERROR: \(error!)" : "ERROR: no data in response")
                     return
                 }
                 
@@ -327,7 +321,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     print("statusCode should be 201, but is \(httpStatus.statusCode)")
                     print("response = \(httpStatus)")
                     
-                    self.showSimpleAlertWithOK("ERROR: bad HTTP response code: \(httpStatus.statusCode)")
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: bad HTTP response code: \(httpStatus.statusCode)")
                     return
                 }
                 
@@ -340,14 +334,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     if let dictionary = json as? [[String: Any]] {
                         if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
                             print("serviceRequestId: \(serviceRequestId)")
-                            self.showSimpleAlertWithOK("New request submitted to 311 with service request ID \(serviceRequestId)")
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
                         } else if let token = dictionary[0]["token"] as? String {
-                            self.showSimpleAlertWithOK("New request submitted to 311 with token \(token)")
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token)")
                         } else {
-                            self.showSimpleAlertWithOK("New request submitted to 311 but we didn't get a service request ID or token")
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 but we didn't get a service request ID or token")
                         }
                     } else {
-                        self.showSimpleAlertWithOK("New request submitted to 311 but the response was malformed")
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 but the response was malformed")
                     }
                 }
                 
@@ -355,7 +349,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     // reset for the next submission
                     self.imageView.image = nil
                     self.viewModel.haveImage.value = false
-                    self.descriptionTextField.text = ""
+                    self.viewModel.description.value = ""
                 }
             }
             task.resume()
@@ -376,7 +370,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        showSimpleAlertWithOK("Unable to access your current location")
+        AppDelegate.showSimpleAlertWithOK(vc: self, "Unable to access your current location")
     }
     
     //MARK:- UIImagePickerControllerDelegate delegate methods
@@ -385,11 +379,16 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // note: could use UIImagePickerControllerEditedImage if allowsEditing == true
         guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
-            print("No image found")
+            AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (no original image)")
             return
         }
         
-        self.imageView.image = image
+        guard let fixedImage = fixOrientation(img: image) else {
+            AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (failed to fix orientation)")
+            return
+        }
+
+        self.imageView.image = fixedImage
         
         // tell the model that we have an image
         self.viewModel.haveImage.value = true
@@ -411,6 +410,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.viewModel.category.value = self.viewModel.categories[row]
+    }
+
+    //MARK:- UITextFieldDelegate
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        
+        self.viewModel.description.value = textField.text ?? ""
+        return true
     }
 }
 

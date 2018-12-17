@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0F70CE988FCEB81FA818D6CD /* Pods_blfa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91972A4DE616C369714B3FCC /* Pods_blfa.framework */; };
-		688EC177219D346F0099D3D9 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EC176219D346F0099D3D9 /* ProfileViewController.swift */; };
+		688EC177219D346F0099D3D9 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EC176219D346F0099D3D9 /* SettingsViewController.swift */; };
 		6895E9E82165B9FD00FD02DA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6895E9E72165B9FD00FD02DA /* AppDelegate.swift */; };
 		6895E9EA2165B9FD00FD02DA /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6895E9E92165B9FD00FD02DA /* MapViewController.swift */; };
 		6895E9EC2165B9FD00FD02DA /* NewReportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6895E9EB2165B9FD00FD02DA /* NewReportViewController.swift */; };
@@ -20,7 +20,7 @@
 
 /* Begin PBXFileReference section */
 		029483008767204024894263 /* Pods-blfa.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-blfa.debug.xcconfig"; path = "Target Support Files/Pods-blfa/Pods-blfa.debug.xcconfig"; sourceTree = "<group>"; };
-		688EC176219D346F0099D3D9 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		688EC176219D346F0099D3D9 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		6895E9E42165B9FD00FD02DA /* blfa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = blfa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6895E9E72165B9FD00FD02DA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6895E9E92165B9FD00FD02DA /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
@@ -80,7 +80,7 @@
 				6895E9E72165B9FD00FD02DA /* AppDelegate.swift */,
 				6895E9E92165B9FD00FD02DA /* MapViewController.swift */,
 				6895E9EB2165B9FD00FD02DA /* NewReportViewController.swift */,
-				688EC176219D346F0099D3D9 /* ProfileViewController.swift */,
+				688EC176219D346F0099D3D9 /* SettingsViewController.swift */,
 				6895E9ED2165B9FD00FD02DA /* Main.storyboard */,
 				6895E9F02165BA0000FD02DA /* Assets.xcassets */,
 				6895E9F22165BA0000FD02DA /* LaunchScreen.storyboard */,
@@ -233,7 +233,7 @@
 			files = (
 				6895E9EC2165B9FD00FD02DA /* NewReportViewController.swift in Sources */,
 				68FA9DA221839377005932D7 /* Keys.swift in Sources */,
-				688EC177219D346F0099D3D9 /* ProfileViewController.swift in Sources */,
+				688EC177219D346F0099D3D9 /* SettingsViewController.swift in Sources */,
 				6895E9E82165B9FD00FD02DA /* AppDelegate.swift in Sources */,
 				6895E9EA2165B9FD00FD02DA /* MapViewController.swift in Sources */,
 			);

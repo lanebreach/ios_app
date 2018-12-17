@@ -34,7 +34,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="PQr-Ze-W5v"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Reports" image="first" id="acW-dT-cKf"/>
+                    <tabBarItem key="tabBarItem" title="Reports" image="second" id="acW-dT-cKf"/>
                     <connections>
                         <outlet property="mapView" destination="E5J-ME-UC4" id="9HL-rx-RHS"/>
                     </connections>
@@ -89,13 +89,13 @@
                                     <constraint firstItem="lkl-DI-qfs" firstAttribute="leading" secondItem="ID6-60-cVW" secondAttribute="leading" id="lua-BG-gIA"/>
                                 </constraints>
                             </view>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="category" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="j5e-0M-LMS">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter category" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="j5e-0M-LMS">
                                 <rect key="frame" x="68" y="331" width="237" height="30"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional description" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6hU-FG-seT">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Description (optional)" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6hU-FG-seT">
                                 <rect key="frame" x="68" y="369" width="237" height="30"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -133,7 +133,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="O1u-W8-tvY"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="New Report" image="second" id="cPa-gy-q4n"/>
+                    <tabBarItem key="tabBarItem" title="New Report" image="first" id="cPa-gy-q4n"/>
                     <connections>
                         <outlet property="categoryTextField" destination="j5e-0M-LMS" id="EDF-Gr-KKJ"/>
                         <outlet property="descriptionTextField" destination="6hU-FG-seT" id="yGW-tr-LrM"/>
@@ -149,18 +149,77 @@
         <!--Settings-->
         <scene sceneID="h0S-Yp-SlC">
             <objects>
-                <viewController id="b0a-le-tlm" customClass="ProfileViewController" customModule="blfa" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="b0a-le-tlm" customClass="SettingsViewController" customModule="blfa" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="v6B-Zl-xuk">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Settings" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="faP-Fl-ur2">
+                                <rect key="frame" x="156" y="20" width="63.5" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9WT-HN-TWF">
+                                <rect key="frame" x="8" y="219" width="359" height="200"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cN3-t9-EZN">
+                                        <rect key="frame" x="8" y="8" width="60" height="21"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="MQb-dI-wmG"/>
+                                            <constraint firstAttribute="height" constant="21" id="fti-Qy-dKO"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="If you supply your email address, your lane blockage reports should also show up in the 311 app. This is entirely optional." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qqf-JY-0XU">
+                                        <rect key="frame" x="8" y="45" width="343" height="100"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="100" id="grB-xA-fAs"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lCx-JU-5yJ">
+                                        <rect key="frame" x="68" y="3.5" width="283" height="30"/>
+                                        <nil key="textColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="lCx-JU-5yJ" secondAttribute="trailing" constant="8" id="86m-Ve-a4N"/>
+                                    <constraint firstItem="Qqf-JY-0XU" firstAttribute="top" secondItem="cN3-t9-EZN" secondAttribute="bottom" constant="16" id="IrD-sP-mdJ"/>
+                                    <constraint firstAttribute="trailing" secondItem="Qqf-JY-0XU" secondAttribute="trailing" constant="8" id="WY6-tP-fSd"/>
+                                    <constraint firstItem="lCx-JU-5yJ" firstAttribute="leading" secondItem="cN3-t9-EZN" secondAttribute="trailing" id="Yt0-kI-58e"/>
+                                    <constraint firstItem="Qqf-JY-0XU" firstAttribute="leading" secondItem="9WT-HN-TWF" secondAttribute="leading" constant="8" id="Zdx-L4-uMS"/>
+                                    <constraint firstItem="lCx-JU-5yJ" firstAttribute="centerY" secondItem="cN3-t9-EZN" secondAttribute="centerY" id="gcy-XE-PiW"/>
+                                    <constraint firstAttribute="height" constant="200" id="h9q-rk-3Hm"/>
+                                    <constraint firstItem="cN3-t9-EZN" firstAttribute="leading" secondItem="9WT-HN-TWF" secondAttribute="leading" constant="8" id="khf-uW-Fyd"/>
+                                    <constraint firstItem="cN3-t9-EZN" firstAttribute="top" secondItem="9WT-HN-TWF" secondAttribute="top" constant="8" id="ybn-96-QrB"/>
+                                </constraints>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="faP-Fl-ur2" firstAttribute="centerX" secondItem="GjX-cO-dCU" secondAttribute="centerX" id="J7L-KC-Kos"/>
+                            <constraint firstItem="9WT-HN-TWF" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="Qjf-1Q-fm8"/>
+                            <constraint firstItem="9WT-HN-TWF" firstAttribute="trailing" secondItem="GjX-cO-dCU" secondAttribute="trailing" constant="-8" id="RLc-aA-UVJ"/>
+                            <constraint firstItem="faP-Fl-ur2" firstAttribute="top" secondItem="GjX-cO-dCU" secondAttribute="top" id="ghu-lE-Py5"/>
+                            <constraint firstItem="9WT-HN-TWF" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="8" id="p11-xC-Oyf"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="GjX-cO-dCU"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Settings" image="first" id="nXh-ws-IVk"/>
+                    <connections>
+                        <outlet property="emailTextField" destination="lCx-JU-5yJ" id="B22-Xd-6qd"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="voY-UU-bvM" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1438" y="3"/>
+            <point key="canvasLocation" x="1437.5999999999999" y="2.2488755622188905"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="yl2-sM-qoP">
@@ -172,9 +231,9 @@
                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                     </tabBar>
                     <connections>
-                        <segue destination="9pv-A4-QxB" kind="relationship" relationship="viewControllers" id="u7Y-xg-7CH"/>
                         <segue destination="8rJ-Kc-sve" kind="relationship" relationship="viewControllers" id="lzU-1b-eKA"/>
-                        <segue destination="b0a-le-tlm" kind="relationship" relationship="viewControllers" id="f1b-Eu-0k0"/>
+                        <segue destination="9pv-A4-QxB" kind="relationship" relationship="viewControllers" id="O18-M6-lFI"/>
+                        <segue destination="b0a-le-tlm" kind="relationship" relationship="viewControllers" id="9zl-w5-SLP"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HuB-VB-40B" sceneMemberID="firstResponder"/>
