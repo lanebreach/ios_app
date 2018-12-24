@@ -20,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		62D1E887BA30D82F5D6D492C /* Pods-blfa.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-blfa.release.xcconfig"; path = "Pods/Target Support Files/Pods-blfa/Pods-blfa.release.xcconfig"; sourceTree = "<group>"; };
+		6830432B21D0BAC2006E3DCE /* blfa.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = blfa.entitlements; sourceTree = "<group>"; };
 		688EC176219D346F0099D3D9 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		6895E9E42165B9FD00FD02DA /* blfa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = blfa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6895E9E72165B9FD00FD02DA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -84,6 +85,7 @@
 		6895E9E62165B9FD00FD02DA /* blfa */ = {
 			isa = PBXGroup;
 			children = (
+				6830432B21D0BAC2006E3DCE /* blfa.entitlements */,
 				68FA9DA121839377005932D7 /* Keys.swift */,
 				6895E9E72165B9FD00FD02DA /* AppDelegate.swift */,
 				6895E9E92165B9FD00FD02DA /* MapViewController.swift */,
@@ -131,6 +133,11 @@
 				TargetAttributes = {
 					6895E9E32165B9FD00FD02DA = {
 						CreatedOnToolsVersion = 9.4.1;
+						SystemCapabilities = {
+							com.apple.iCloud = {
+								enabled = 0;
+							};
+						};
 					};
 				};
 			};
