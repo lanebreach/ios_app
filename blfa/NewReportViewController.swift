@@ -7,14 +7,12 @@
 //
 
 import AWSS3
-import UIKit
 import CoreLocation
+import JGProgressHUD
 import ReactiveCocoa
 import ReactiveSwift
 import Result
-
-// TODO - show progress ind while uploading
-// TODO - add location indicator
+import UIKit
 
 class NewReportViewModel {
     let emailAddress: MutableProperty<String>
@@ -24,6 +22,7 @@ class NewReportViewModel {
     let currentLocation: MutableProperty<CLLocationCoordinate2D?>
     
     var categorySignal: Signal<String, NoError>
+    var descriptionSignal: Signal<String, NoError>
     var okToSendSignal: Signal<Bool, NoError>
     var locationStatusSignal: Signal<Bool, NoError>
     
@@ -40,6 +39,7 @@ class NewReportViewModel {
         self.currentLocation = MutableProperty(nil)
         
         self.categorySignal = self.category.signal
+        self.descriptionSignal = self.description.signal
         
         // output true if the email address has 3+ chars and we have a valid category/image/location
         self.okToSendSignal = Signal.combineLatest(self.category.signal, self.haveImage.signal, self.currentLocation.signal)
@@ -71,6 +71,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var viewModel: NewReportViewModel!
     var locationManager = CLLocationManager()
     var keyboardHeight: CGFloat = 0
+    var hud: JGProgressHUD?
     
     //MARK:- Internal methods    
     func uploadImage(with data: Data, filename: String, completion: @escaping (Error?) -> Void) {
@@ -153,6 +154,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
+        self.descriptionTextField.reactive.text <~ self.viewModel.descriptionSignal
         self.viewModel.locationStatusSignal.observeValues { value in
             print("locationStatusSignal: \(value)")
             self.locationButton.setImage(UIImage(named: value ? "location_good" : "location_bad"), for: UIControlState.normal)
@@ -273,9 +275,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // TODO: probably move into model
         let filename = UUID().uuidString
+        
+        hud = JGProgressHUD(style: .dark)
+        if let hud = hud {
+            hud.textLabel.text = "Uploading image"
+            hud.show(in: self.view)
+        }
+
         self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
-            if error != nil {
-                print("uploadImage failed with \(error!)")
+            guard error == nil else {
+                self.hud?.dismiss()
+                AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed with \(error!)")
                 return
             }
 
@@ -317,47 +327,69 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "POST"
             request.httpBody = postString.data(using: .utf8)
+            
+            self.hud?.textLabel.text = "Uploading details"
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error != nil ? "error=\(error!)" : "no data")
-                    
-                    AppDelegate.showSimpleAlertWithOK(vc: self, error != nil ? "ERROR: \(error!)" : "ERROR: no data in response")
-                    return
-                }
-                
-                // check for 201 CREATED
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
-                    print("statusCode should be 201, but is \(httpStatus.statusCode)")
-                    print("response = \(httpStatus)")
-                    
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: bad HTTP response code: \(httpStatus.statusCode)")
-                    return
-                }
-                
-                if let responseString = String(data: data, encoding: .utf8) {
-                    // looks like: responseString = [{"token":"5bc6c0f5ff031d6f5b335df0"}]
-                    print("responseString = \(responseString)")
-                    
-                    // check if it's a token
-                    let json = try? JSONSerialization.jsonObject(with: data, options: [])
-                    if let dictionary = json as? [[String: Any]] {
-                        if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
-                            print("serviceRequestId: \(serviceRequestId)")
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
-                        } else if let token = dictionary[0]["token"] as? String {
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token)")
-                        } else {
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 but we didn't get a service request ID or token")
-                        }
-                    } else {
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 but the response was malformed")
-                    }
-                }
-                
                 DispatchQueue.main.async {
+                    guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                        print(error != nil ? "error=\(error!)" : "no data")
+                        
+                        self.hud?.dismiss()
+                        AppDelegate.showSimpleAlertWithOK(vc: self, error != nil ? "ERROR: \(error!)" : "ERROR: no data in server response")
+                        return
+                    }
+                    
+                    // check for 201 CREATED
+                    if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
+                        print("statusCode should be 201, but is \(httpStatus.statusCode)")
+                        print("response = \(httpStatus)")
+                        
+                        self.hud?.dismiss()
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: bad HTTP response code: \(httpStatus.statusCode)")
+                        return
+                    }
+                    
+                    self.hud?.dismiss()
+                    if let responseString = String(data: data, encoding: .utf8) {
+                        // looks like: responseString = [{"token":"5bc6c0f5ff031d6f5b335df0"}]
+                        print("responseString = \(responseString)")
+                        
+                        // check if it's a token
+                        let json = try? JSONSerialization.jsonObject(with: data, options: [])
+                        if let dictionary = json as? [[String: Any]] {
+                            if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
+                                print("serviceRequestId: \(serviceRequestId)")
+                                #if DEBUG
+                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
+                                #else
+                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
+                                #endif
+                            } else if let token = dictionary[0]["token"] as? String {
+                                #if DEBUG
+                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token)")
+                                #else
+                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
+                                #endif
+                            } else {
+                                #if DEBUG
+                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get a service request ID or token")
+                                #else
+                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
+                                #endif
+                            }
+                        } else {
+                            #if DEBUG
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 but the response was malformed")
+                            #else
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
+                            #endif
+                        }
+                    }
+                    
                     // reset for the next submission
                     self.imageView.image = nil
                     self.viewModel.haveImage.value = false
+                    self.viewModel.category.value = ""
                     self.viewModel.description.value = ""
                 }
             }

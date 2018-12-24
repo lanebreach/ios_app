@@ -6,15 +6,15 @@
 //  Copyright © 2018 Dale Low. All rights reserved.
 //
 
-import UIKit
 import AWSDynamoDB
+import UIKit
+import JGProgressHUD
 import MapKit
 import Mapbox
 
-// TODO - show progress ind while waiting for map to load
-
 class MapViewController: UIViewController, MGLMapViewDelegate {
     @IBOutlet weak var mapView: MKMapView!
+    var hud: JGProgressHUD?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,10 +40,18 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
         twinPeaks.title = "Twin Peaks"
         twinPeaks.subtitle = "The best place to see the City"
         mapView.addAnnotation(twinPeaks)
+        
+        hud = JGProgressHUD(style: .dark)
+        if let hud = hud {
+            hud.textLabel.text = "Loading"
+            hud.show(in: self.view)
+        }
     }
     
     func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
         print("didFinishLoading")
+        
+        hud?.dismiss()
     }
     
     func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
