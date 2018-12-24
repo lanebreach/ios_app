@@ -55,6 +55,8 @@
 	<string>This allows you to take pictures of lane blockages.</string>
 	<key>MGLMapboxAccessToken</key>
 	<string>not_used</string>
+	<key>CFBundleDisplayName</key>
+	<string>Lane Breach</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

@@ -51,13 +51,32 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DuW-Gu-DQ3" customClass="UIImageView">
-                                <rect key="frame" x="68" y="44" width="237" height="237"/>
-                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bikelane1" translatesAutoresizingMaskIntoConstraints="NO" id="Ynd-VK-HOO">
+                                <rect key="frame" x="0.0" y="-14.5" width="375" height="667"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l2o-87-Qdm">
+                                <rect key="frame" x="68" y="407" width="237" height="50"/>
+                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" secondItem="DuW-Gu-DQ3" secondAttribute="height" multiplier="1:1" id="Ovq-zh-oar"/>
+                                    <constraint firstAttribute="height" constant="50" id="hGD-mH-QAn"/>
                                 </constraints>
-                            </view>
+                                <state key="normal" title="SEND TO 311!"/>
+                                <connections>
+                                    <action selector="postTestReportWithSender:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="H1r-td-nUi"/>
+                                </connections>
+                            </button>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Description (optional)" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6hU-FG-seT">
+                                <rect key="frame" x="68" y="369" width="237" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter category" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="j5e-0M-LMS">
+                                <rect key="frame" x="68" y="331" width="237" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ID6-60-cVW" userLabel="Camera Buttons View">
                                 <rect key="frame" x="68" y="287" width="240" height="36"/>
                                 <subviews>
@@ -78,7 +97,6 @@
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstItem="8lb-rC-3Qp" firstAttribute="width" secondItem="lkl-DI-qfs" secondAttribute="width" id="73L-1d-uWo"/>
                                     <constraint firstAttribute="height" constant="36" id="Xms-0A-c8g"/>
@@ -89,32 +107,18 @@
                                     <constraint firstItem="lkl-DI-qfs" firstAttribute="leading" secondItem="ID6-60-cVW" secondAttribute="leading" id="lua-BG-gIA"/>
                                 </constraints>
                             </view>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter category" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="j5e-0M-LMS">
-                                <rect key="frame" x="68" y="331" width="237" height="30"/>
-                                <nil key="textColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Description (optional)" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="6hU-FG-seT">
-                                <rect key="frame" x="68" y="369" width="237" height="30"/>
-                                <nil key="textColor"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l2o-87-Qdm">
-                                <rect key="frame" x="68" y="407" width="237" height="50"/>
-                                <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="DuW-Gu-DQ3" customClass="UIImageView">
+                                <rect key="frame" x="68" y="44" width="237" height="237"/>
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="hGD-mH-QAn"/>
+                                    <constraint firstAttribute="width" secondItem="DuW-Gu-DQ3" secondAttribute="height" multiplier="1:1" id="Ovq-zh-oar"/>
                                 </constraints>
-                                <state key="normal" title="SEND TO 311!"/>
-                                <connections>
-                                    <action selector="postTestReportWithSender:" destination="8rJ-Kc-sve" eventType="touchUpInside" id="H1r-td-nUi"/>
-                                </connections>
-                            </button>
+                            </view>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="Ynd-VK-HOO" firstAttribute="centerX" secondItem="O1u-W8-tvY" secondAttribute="centerX" id="7YF-ZU-5yI"/>
+                            <constraint firstItem="Ynd-VK-HOO" firstAttribute="width" secondItem="QS5-Rx-YEW" secondAttribute="width" id="Bmt-Bh-m4c"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="6hU-FG-seT" secondAttribute="trailing" constant="70" id="CWc-O0-kcZ"/>
                             <constraint firstItem="l2o-87-Qdm" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="Civ-oA-wHi"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="DuW-Gu-DQ3" secondAttribute="trailing" constant="70" id="IVG-OM-JBt"/>
@@ -127,8 +131,10 @@
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="l2o-87-Qdm" secondAttribute="trailing" constant="70" id="Xp8-xF-hzC"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="ID6-60-cVW" secondAttribute="trailing" constant="67" id="Xwq-0V-d5l"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="j5e-0M-LMS" secondAttribute="trailing" constant="70" id="bdX-Pl-J2K"/>
+                            <constraint firstItem="Ynd-VK-HOO" firstAttribute="centerY" secondItem="O1u-W8-tvY" secondAttribute="centerY" id="cW8-8h-OTh"/>
                             <constraint firstItem="j5e-0M-LMS" firstAttribute="top" secondItem="ID6-60-cVW" secondAttribute="bottom" constant="8" id="kfN-FO-azu"/>
                             <constraint firstItem="DuW-Gu-DQ3" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="68" id="rJb-Gz-IQe"/>
+                            <constraint firstItem="Ynd-VK-HOO" firstAttribute="height" secondItem="QS5-Rx-YEW" secondAttribute="height" id="t0T-AY-Gl0"/>
                             <constraint firstItem="l2o-87-Qdm" firstAttribute="top" secondItem="6hU-FG-seT" secondAttribute="bottom" constant="8" id="wuo-UA-GWd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="O1u-W8-tvY"/>
@@ -154,13 +160,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Settings" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="faP-Fl-ur2">
-                                <rect key="frame" x="156" y="20" width="63.5" height="21"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bikelane1" translatesAutoresizingMaskIntoConstraints="NO" id="JOP-fe-TgW">
+                                <rect key="frame" x="0.0" y="-14.5" width="375" height="667"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="faP-Fl-ur2">
+                                <rect key="frame" x="16" y="28" width="343" height="183"/>
+                                <string key="text">Lane Breach makes it easy to report bike lane blockages to San Francisco's 311 service: just take a picture, select a category (Uber, bus, etc), optional description and press SEND.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9WT-HN-TWF">
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9WT-HN-TWF" userLabel="Email View">
                                 <rect key="frame" x="8" y="219" width="359" height="200"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cN3-t9-EZN">
@@ -170,16 +180,7 @@
                                             <constraint firstAttribute="height" constant="21" id="fti-Qy-dKO"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="If you supply your email address, your lane blockage reports should also show up in the 311 app. This is entirely optional." textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qqf-JY-0XU">
-                                        <rect key="frame" x="8" y="45" width="343" height="100"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="100" id="grB-xA-fAs"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                        <nil key="textColor"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="optional" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lCx-JU-5yJ">
@@ -188,6 +189,12 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="If you supply your email address, your lane blockage reports should also show up in the 311 app. This is entirely optional." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qqf-JY-0XU">
+                                        <rect key="frame" x="8" y="45" width="343" height="54"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="lCx-JU-5yJ" secondAttribute="trailing" constant="8" id="86m-Ve-a4N"/>
@@ -204,11 +211,17 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="faP-Fl-ur2" firstAttribute="centerX" secondItem="GjX-cO-dCU" secondAttribute="centerX" id="J7L-KC-Kos"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="faP-Fl-ur2" secondAttribute="trailing" constant="16" id="6cB-JR-023"/>
+                            <constraint firstItem="JOP-fe-TgW" firstAttribute="width" secondItem="v6B-Zl-xuk" secondAttribute="width" id="JzW-Gs-q9k"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="Qjf-1Q-fm8"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="trailing" secondItem="GjX-cO-dCU" secondAttribute="trailing" constant="-8" id="RLc-aA-UVJ"/>
-                            <constraint firstItem="faP-Fl-ur2" firstAttribute="top" secondItem="GjX-cO-dCU" secondAttribute="top" id="ghu-lE-Py5"/>
+                            <constraint firstItem="faP-Fl-ur2" firstAttribute="top" secondItem="GjX-cO-dCU" secondAttribute="top" constant="8" id="ghu-lE-Py5"/>
+                            <constraint firstItem="faP-Fl-ur2" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="i8o-4B-uHR"/>
+                            <constraint firstItem="JOP-fe-TgW" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="iAt-j1-TdZ"/>
+                            <constraint firstItem="9WT-HN-TWF" firstAttribute="top" secondItem="faP-Fl-ur2" secondAttribute="bottom" constant="8" id="nN7-CF-xnn"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="8" id="p11-xC-Oyf"/>
+                            <constraint firstItem="JOP-fe-TgW" firstAttribute="height" secondItem="v6B-Zl-xuk" secondAttribute="height" id="wVO-jE-Dza"/>
+                            <constraint firstItem="JOP-fe-TgW" firstAttribute="centerX" secondItem="GjX-cO-dCU" secondAttribute="centerX" id="xGw-DI-89h"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="GjX-cO-dCU"/>
                     </view>
@@ -242,6 +255,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="bikelane1" width="175" height="249"/>
         <image name="first" width="30" height="30"/>
         <image name="second" width="30" height="30"/>
     </resources>

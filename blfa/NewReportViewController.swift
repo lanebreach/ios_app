@@ -13,6 +13,9 @@ import ReactiveCocoa
 import ReactiveSwift
 import Result
 
+// TODO - show progress ind while uploading
+// TODO - add location indicator
+
 class NewReportViewModel {
     let emailAddress: MutableProperty<String>
     let description: MutableProperty<String>
@@ -199,6 +202,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.viewModel.currentLocation.value = nil
         
         // TODO - this gets called after an image is selected too, so we probably want to disable that
+        // TODO - chek if we're outside of San Francisco!
         if CLLocationManager.locationServicesEnabled() == true {
             if CLLocationManager.authorizationStatus() == .restricted || CLLocationManager.authorizationStatus() == .denied ||  CLLocationManager.authorizationStatus() == .notDetermined {
                 self.locationManager.requestWhenInUseAuthorization()
