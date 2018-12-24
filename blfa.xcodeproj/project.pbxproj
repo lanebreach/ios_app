@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F70CE988FCEB81FA818D6CD /* Pods_blfa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91972A4DE616C369714B3FCC /* Pods_blfa.framework */; };
 		688EC177219D346F0099D3D9 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688EC176219D346F0099D3D9 /* SettingsViewController.swift */; };
 		6895E9E82165B9FD00FD02DA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6895E9E72165B9FD00FD02DA /* AppDelegate.swift */; };
 		6895E9EA2165B9FD00FD02DA /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6895E9E92165B9FD00FD02DA /* MapViewController.swift */; };
@@ -16,10 +15,11 @@
 		6895E9F12165BA0000FD02DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6895E9F02165BA0000FD02DA /* Assets.xcassets */; };
 		6895E9F42165BA0000FD02DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6895E9F22165BA0000FD02DA /* LaunchScreen.storyboard */; };
 		68FA9DA221839377005932D7 /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68FA9DA121839377005932D7 /* Keys.swift */; };
+		6FBDC6467713BD597A37D7CE /* Pods_blfa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8775DEEF1F9416F37AB5069D /* Pods_blfa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		029483008767204024894263 /* Pods-blfa.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-blfa.debug.xcconfig"; path = "Target Support Files/Pods-blfa/Pods-blfa.debug.xcconfig"; sourceTree = "<group>"; };
+		62D1E887BA30D82F5D6D492C /* Pods-blfa.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-blfa.release.xcconfig"; path = "Pods/Target Support Files/Pods-blfa/Pods-blfa.release.xcconfig"; sourceTree = "<group>"; };
 		688EC176219D346F0099D3D9 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		6895E9E42165B9FD00FD02DA /* blfa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = blfa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6895E9E72165B9FD00FD02DA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -30,8 +30,8 @@
 		6895E9F32165BA0000FD02DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6895E9F52165BA0000FD02DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		68FA9DA121839377005932D7 /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
-		91972A4DE616C369714B3FCC /* Pods_blfa.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_blfa.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		EFEFAAE41E6B6BBC4B735A51 /* Pods-blfa.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-blfa.release.xcconfig"; path = "Target Support Files/Pods-blfa/Pods-blfa.release.xcconfig"; sourceTree = "<group>"; };
+		8775DEEF1F9416F37AB5069D /* Pods_blfa.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_blfa.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDED56AC3046BA9659D93404 /* Pods-blfa.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-blfa.debug.xcconfig"; path = "Pods/Target Support Files/Pods-blfa/Pods-blfa.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,7 +39,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0F70CE988FCEB81FA818D6CD /* Pods_blfa.framework in Frameworks */,
+				6FBDC6467713BD597A37D7CE /* Pods_blfa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,10 +49,18 @@
 		08011BE10E710659D7C271BF /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				029483008767204024894263 /* Pods-blfa.debug.xcconfig */,
-				EFEFAAE41E6B6BBC4B735A51 /* Pods-blfa.release.xcconfig */,
+				FDED56AC3046BA9659D93404 /* Pods-blfa.debug.xcconfig */,
+				62D1E887BA30D82F5D6D492C /* Pods-blfa.release.xcconfig */,
 			);
-			path = Pods;
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		5CAF2A4DC1857F13A9313070 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8775DEEF1F9416F37AB5069D /* Pods_blfa.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		6895E9DB2165B9FD00FD02DA = {
@@ -61,7 +69,7 @@
 				6895E9E62165B9FD00FD02DA /* blfa */,
 				6895E9E52165B9FD00FD02DA /* Products */,
 				08011BE10E710659D7C271BF /* Pods */,
-				D6DA3E3EE51DEBCB5D9A18D8 /* Frameworks */,
+				5CAF2A4DC1857F13A9313070 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -89,14 +97,6 @@
 			path = blfa;
 			sourceTree = "<group>";
 		};
-		D6DA3E3EE51DEBCB5D9A18D8 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				91972A4DE616C369714B3FCC /* Pods_blfa.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -104,11 +104,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6895E9F82165BA0000FD02DA /* Build configuration list for PBXNativeTarget "blfa" */;
 			buildPhases = (
-				CD463A2AEB9BA1B746FA6F19 /* [CP] Check Pods Manifest.lock */,
+				C0A21BF9EBD3960C1280C647 /* [CP] Check Pods Manifest.lock */,
 				6895E9E02165B9FD00FD02DA /* Sources */,
 				6895E9E12165B9FD00FD02DA /* Frameworks */,
 				6895E9E22165B9FD00FD02DA /* Resources */,
-				A068FCBF2C225BC8BF4B67A5 /* [CP] Embed Pods Frameworks */,
+				1487B8E54D2244AFDAB53B43 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -166,7 +166,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		A068FCBF2C225BC8BF4B67A5 /* [CP] Embed Pods Frameworks */ = {
+		1487B8E54D2244AFDAB53B43 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -174,10 +174,11 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-blfa/Pods-blfa-frameworks.sh",
+				"${SRCROOT}/Pods/Target Support Files/Pods-blfa/Pods-blfa-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AWSCore/AWSCore.framework",
 				"${BUILT_PRODUCTS_DIR}/AWSDynamoDB/AWSDynamoDB.framework",
 				"${BUILT_PRODUCTS_DIR}/AWSS3/AWSS3.framework",
+				"${BUILT_PRODUCTS_DIR}/JGProgressHUD/JGProgressHUD.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework",
 				"${PODS_ROOT}/Mapbox-iOS-SDK/dynamic/Mapbox.framework.dSYM",
 				"${BUILT_PRODUCTS_DIR}/ReactiveCocoa/ReactiveCocoa.framework",
@@ -191,6 +192,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSCore.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSDynamoDB.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AWSS3.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JGProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Mapbox.framework",
 				"${DWARF_DSYM_FOLDER_PATH}/Mapbox.framework.dSYM",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactiveCocoa.framework",
@@ -199,10 +201,10 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-blfa/Pods-blfa-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-blfa/Pods-blfa-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CD463A2AEB9BA1B746FA6F19 /* [CP] Check Pods Manifest.lock */ = {
+		C0A21BF9EBD3960C1280C647 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -377,7 +379,7 @@
 		};
 		6895E9F92165BA0000FD02DA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 029483008767204024894263 /* Pods-blfa.debug.xcconfig */;
+			baseConfigurationReference = FDED56AC3046BA9659D93404 /* Pods-blfa.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -397,7 +399,7 @@
 		};
 		6895E9FA2165BA0000FD02DA /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EFEFAAE41E6B6BBC4B735A51 /* Pods-blfa.release.xcconfig */;
+			baseConfigurationReference = 62D1E887BA30D82F5D6D492C /* Pods-blfa.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;

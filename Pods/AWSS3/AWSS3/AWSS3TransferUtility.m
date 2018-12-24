@@ -29,7 +29,7 @@ NSString *const AWSS3TransferUtilityURLSessionDidBecomeInvalidNotification = @"c
 
 
 // Private constants
-static NSString *const AWSS3TransferUtilityIdentifier = @"com.amazonaws.AWSS3TransferUtility.Identifier";
+static NSString *const AWSS3TransferUtilityDefaultIdentifier = @"com.amazonaws.AWSS3TransferUtility.Default.Identifier";
 static NSTimeInterval const AWSS3TransferUtilityTimeoutIntervalForResource = 50 * 60; // 50 minutes
 static NSString *const AWSS3TransferUtilityUserAgent = @"transfer-utility";
 static NSString *const AWSInfoS3TransferUtility = @"S3TransferUtility";
@@ -220,7 +220,10 @@ static int const AWSS3TransferUtilityMultiPartDefaultConcurrencyLimit = 5;
 @end
 
 @interface AWSS3TransferUtility (Validation)
-- (AWSTask *) validateParameters: (NSString * )bucket fileURL:(NSURL *)fileURL accelerationModeEnabled: (BOOL) accelerationModeEnabled;
+- (AWSTask *) validateParameters: (NSString * )bucket key:(NSString *)key fileURL:(NSURL *)fileURL accelerationModeEnabled: (BOOL) accelerationModeEnabled;
+
+- (AWSTask *) validateParameters: (NSString * )bucket key:(NSString *)key accelerationModeEnabled: (BOOL) accelerationModeEnabled;
+
 @end
 
 @interface AWSS3TransferUtility (HeaderHelper)
@@ -314,7 +317,7 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
     
     AWSS3TransferUtility *s3TransferUtility = [[AWSS3TransferUtility alloc] initWithConfiguration:configuration
                                                                      transferUtilityConfiguration:transferUtilityConfiguration
-                                                                                       identifier:[NSString stringWithFormat:@"%@.%@", AWSS3TransferUtilityIdentifier, key]
+                                                                                       identifier:[NSString stringWithFormat:@"%@.%@", AWSS3TransferUtilityDefaultIdentifier, key]
                                                                                 completionHandler: completionHandler];
     [_serviceClients setObject:s3TransferUtility
                         forKey:key];
@@ -382,8 +385,7 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
             _sessionIdentifier = identifier;
         }
         else {
-             NSString *uuid = [[NSUUID UUID] UUIDString];
-            _sessionIdentifier = [AWSS3TransferUtilityIdentifier stringByAppendingString:uuid];
+            _sessionIdentifier = AWSS3TransferUtilityDefaultIdentifier;
         }
         
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:_sessionIdentifier];
@@ -539,6 +541,8 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
         //Loop through all the upload Tasks.
         for( NSURLSessionUploadTask *task in uploadTasks ) {
             AWSDDLogDebug(@"Iterating through task Identifier [%lu]", (unsigned long)task.taskIdentifier);
+            NSError *taskError = [task error];
+            
             //Get the Task
             id obj = [tempTransferDictionary objectForKey:@(task.taskIdentifier)];
             
@@ -550,9 +554,19 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
                 [self.taskDictionary setObject:uploadTask forKey:@(uploadTask.taskIdentifier)];
                 AWSDDLogDebug(@"Added Upload Transfer task %@ to task dictionary", @(uploadTask.taskIdentifier));
                 AWSDDLogDebug(@"Status is %ld", (long)uploadTask.status);
-                
+
                 //Remove this object from the tempTransferDictionary list
                 [tempTransferDictionary removeObjectForKey:@(task.taskIdentifier)];
+            
+                //Check if the task has errored out.
+                if (taskError) {
+                    uploadTask.status = AWSS3TransferUtilityTransferStatusError;
+                    [self markTransferAsCompleted:uploadTask
+                                        taskError:taskError
+                             temporaryFileCreated:uploadTask.temporaryFileCreated
+                                         filePath:uploadTask.file];
+                    continue;
+                }
                 
                 //Check if it is InProgress
                 if (uploadTask.status == AWSS3TransferUtilityTransferStatusInProgress) {
@@ -561,12 +575,10 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
                         //Set progress to 100%
                         uploadTask.progress.completedUnitCount = uploadTask.progress.totalUnitCount;
                         uploadTask.status = AWSS3TransferUtilityTransferStatusCompleted;
-                        [self.completedTaskDictionary setObject:uploadTask forKey:uploadTask.transferID];
-                        [self.taskDictionary removeObjectForKey:@(uploadTask.taskIdentifier)];
-                        if (uploadTask.temporaryFileCreated) {
-                            [self removeFile:uploadTask.file];
-                        }
-                        [AWSS3TransferUtilityDatabaseHelper deleteTransferRequestFromDB:uploadTask.transferID databaseQueue:self->_databaseQueue];
+                        [self markTransferAsCompleted:uploadTask
+                                            taskError:nil
+                                 temporaryFileCreated:uploadTask.temporaryFileCreated
+                                             filePath:uploadTask.file];
                         continue;
                     }
                     //If it is in any other status than running, then we need to recover by retrying.
@@ -616,6 +628,8 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
         //Loop through all the Download tasks
         for( NSURLSessionDownloadTask *task in downloadTasks ) {
             id obj = [tempTransferDictionary objectForKey:@(task.taskIdentifier)];
+            NSError *taskError = [task error];
+            
             AWSDDLogDebug(@"Looking at NSURLSession Download Task [%lu]", (unsigned long)task.taskIdentifier);
             if ([obj isKindOfClass:[AWSS3TransferUtilityDownloadTask class]])
             {
@@ -628,16 +642,22 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
                 
                 //Remove this request from the transferRequests list.
                 [tempTransferDictionary removeObjectForKey:@(task.taskIdentifier)];
-                
+
+                //Check if the task has errored out.
+                if (taskError) {
+                    downloadTask.status = AWSS3TransferUtilityTransferStatusError;
+                    [self markTransferAsCompleted:downloadTask taskError:taskError temporaryFileCreated:NO filePath:@""];
+                    continue;
+                }
+
                 //Check if this is in progress
                 if (downloadTask.status == AWSS3TransferUtilityTransferStatusInProgress) {
+
                     if ([task state] == NSURLSessionTaskStateCompleted) {
                         //Set progress to 100%
                         downloadTask.progress.completedUnitCount = downloadTask.progress.totalUnitCount;
                         downloadTask.status = AWSS3TransferUtilityTransferStatusCompleted;
-                        [self.completedTaskDictionary setObject:downloadTask forKey:downloadTask.transferID];
-                        [self.taskDictionary removeObjectForKey:@(downloadTask.taskIdentifier)];
-                        [AWSS3TransferUtilityDatabaseHelper deleteTransferRequestFromDB:downloadTask.transferID databaseQueue:self->_databaseQueue];
+                        [self markTransferAsCompleted:downloadTask taskError:taskError temporaryFileCreated:NO filePath:@""];
                         continue;
                     }
                     //Check if the underlying task's status is not in Progress.
@@ -665,6 +685,23 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
     }];
 }
 
+- (void) markTransferAsCompleted:(AWSS3TransferUtilityTask *) transferUtilityTask
+                       taskError: (NSError *) taskError
+            temporaryFileCreated: (BOOL) temporaryFileCreated
+                        filePath: (NSString *) filePath
+{
+    if (temporaryFileCreated) {
+        [self removeFile:filePath];
+    }
+    
+    if (taskError) {
+        AWSDDLogError(@"Task [%lu] has an error status [%@]. Marking transfer status as Error", (unsigned long)transferUtilityTask.taskIdentifier, taskError);
+        transferUtilityTask.error = taskError;
+    }
+    [self.completedTaskDictionary setObject:transferUtilityTask forKey:transferUtilityTask.transferID];
+    [self.taskDictionary removeObjectForKey:@(transferUtilityTask.taskIdentifier)];
+    [AWSS3TransferUtilityDatabaseHelper deleteTransferRequestFromDB:transferUtilityTask.transferID databaseQueue:self->_databaseQueue];
+}
 
 - (void) handleUnlinkedTransfers:(NSMutableDictionary *) tempMultiPartMasterTaskDictionary
                    tempTransferDictionary: (NSMutableDictionary *) tempTransferDictionary {
@@ -960,7 +997,7 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
                                      temporaryFileCreated: (BOOL) temporaryFileCreated
                                         completionHandler:(AWSS3TransferUtilityUploadCompletionHandlerBlock)completionHandler {
     //Validate input parameters.
-    AWSTask *error = [self validateParameters:bucket fileURL:fileURL accelerationModeEnabled:self.transferUtilityConfiguration.isAccelerateModeEnabled];
+    AWSTask *error = [self validateParameters:bucket key:key fileURL:fileURL accelerationModeEnabled:self.transferUtilityConfiguration.isAccelerateModeEnabled];
     if (error) {
         if (temporaryFileCreated) {
             [self removeFile:[fileURL path]];
@@ -1185,7 +1222,7 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
                                         completionHandler:(AWSS3TransferUtilityMultiPartUploadCompletionHandlerBlock) completionHandler {
     
     //Validate input parameters.
-    AWSTask *error = [self validateParameters:bucket fileURL:fileURL accelerationModeEnabled:self.transferUtilityConfiguration.isAccelerateModeEnabled];
+    AWSTask *error = [self validateParameters:bucket key:key fileURL:fileURL  accelerationModeEnabled:self.transferUtilityConfiguration.isAccelerateModeEnabled];
     if (error) {
         if (temporaryFileCreated) {
             [self removeFile:[fileURL path]];
@@ -1254,8 +1291,22 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
             }
             return [AWSTask taskWithError:task.error];
         }
+
         //Get the uploadID. This will be used with every part that we will upload.
         AWSS3CreateMultipartUploadOutput *output = task.result;
+
+        //Check if the uploadId is null to safeguard from crash reported in https://github.com/aws/aws-sdk-ios/issues/1060
+        if (output.uploadId == (id) [NSNull null] || output.uploadId.length == 0 ) {
+            AWSDDLogError(@"MultiPartUploadID is null - Failing Transfer");
+            NSDictionary *userInfo = [NSDictionary dictionaryWithObject:@"MultiPartUploadID is null - Failing Transfer"
+                                                                 forKey:@"Message"];
+
+            NSError *error = [NSError errorWithDomain:AWSS3TransferUtilityErrorDomain
+                                                 code:AWSS3TransferUtilityErrorServerError
+                                             userInfo:userInfo];
+            return [AWSTask taskWithError:error];
+         }
+
         transferUtilityMultiPartUploadTask.uploadID = output.uploadId;
         
         //Save the Multipart Upload in the DB
@@ -1494,17 +1545,10 @@ static AWSS3TransferUtility *_defaultS3TransferUtility = nil;
                                                                    key:(NSString *)key
                                                             expression:(AWSS3TransferUtilityDownloadExpression *)expression
                                                      completionHandler:(AWSS3TransferUtilityDownloadCompletionHandlerBlock)completionHandler {
-    //Validate that bucket has been specified.
-    if (!bucket || [bucket length] == 0) {
-        NSInteger errorCode = (self.transferUtilityConfiguration.isAccelerateModeEnabled) ?
-        AWSS3PresignedURLErrorInvalidBucketNameForAccelerateModeEnabled : AWSS3PresignedURLErrorInvalidBucketName;
-        NSString *errorMessage = @"Invalid bucket specified. Please specify a bucket name or configure the bucket property in `AWSS3TransferUtilityConfiguration`.";
-        NSDictionary *userInfo = [NSDictionary dictionaryWithObject:errorMessage
-                                               forKey:NSLocalizedDescriptionKey];
-        
-        return [AWSTask taskWithError:[NSError errorWithDomain:AWSS3PresignedURLErrorDomain
-                                                          code:errorCode
-                                                      userInfo:userInfo]];
+    //Validate that bucket and key have been specified.
+    AWSTask *error = [self validateParameters:bucket key:key accelerationModeEnabled:self.transferUtilityConfiguration.isAccelerateModeEnabled];
+    if (error) {
+        return error;
     }
     
     //Create Expression if required and set completion Handler.
@@ -1838,9 +1882,11 @@ handleEventsForBackgroundURLSession:(NSString *)identifier
 
 - (void)URLSessionDidFinishEventsForBackgroundURLSession:(NSURLSession *)session {
     AWSDDLogDebug(@"URLSessionDidFinishEventsForBackgroundURLSession called for NSURLSession %@", _sessionIdentifier);
-    if (self.backgroundURLSessionCompletionHandler) {
-        self.backgroundURLSessionCompletionHandler();
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self.backgroundURLSessionCompletionHandler) {
+            self.backgroundURLSessionCompletionHandler();
+        }
+    });
 }
 
 - (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error {

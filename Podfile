@@ -11,4 +11,5 @@ target 'blfa' do
   pod 'AWSDynamoDB'
   pod 'ReactiveCocoa', '~> 8.0'
   pod 'Mapbox-iOS-SDK', '~> 4.6'
+  pod 'JGProgressHUD'
 end

@@ -1,11 +1,12 @@
 PODS:
-  - AWSCore (2.6.31)
-  - AWSDynamoDB (2.6.31):
-    - AWSCore (= 2.6.31)
-  - AWSS3 (2.6.31):
-    - AWSCore (= 2.6.31)
-  - Mapbox-iOS-SDK (4.6.0)
-  - ReactiveCocoa (8.0.0):
+  - AWSCore (2.6.35)
+  - AWSDynamoDB (2.6.35):
+    - AWSCore (= 2.6.35)
+  - AWSS3 (2.6.35):
+    - AWSCore (= 2.6.35)
+  - JGProgressHUD (2.0.3)
+  - Mapbox-iOS-SDK (4.7.1)
+  - ReactiveCocoa (8.0.2):
     - ReactiveSwift (~> 4.0)
   - ReactiveSwift (4.0.0):
     - Result (~> 4.0)
@@ -15,6 +16,7 @@ DEPENDENCIES:
   - AWSCore (~> 2.6.13)
   - AWSDynamoDB
   - AWSS3 (~> 2.6.0)
+  - JGProgressHUD
   - Mapbox-iOS-SDK (~> 4.6)
   - ReactiveCocoa (~> 8.0)
 
@@ -23,20 +25,22 @@ SPEC REPOS:
     - AWSCore
     - AWSDynamoDB
     - AWSS3
+    - JGProgressHUD
     - Mapbox-iOS-SDK
     - ReactiveCocoa
     - ReactiveSwift
     - Result
 
 SPEC CHECKSUMS:
-  AWSCore: c7abfb87ef802d1c4b5dd56db64ac8b4a7823ef0
-  AWSDynamoDB: eb3eb7d49b14f1e523afa80373a8ab0fbde935a9
-  AWSS3: 5647e89f9ac8e7033f3e5507dbb3eccc37f82b75
-  Mapbox-iOS-SDK: 204c04713477cf2a88c52c5a8eed1790eb75a02a
-  ReactiveCocoa: 87cb64d78424d749a0bbfd9b07e4825e8d834066
+  AWSCore: 2dab62ef2e5ca5d8c72c6cbdb3a6ea1532c27c2b
+  AWSDynamoDB: f4902fc37384dcf9547e2d8a32a5b208d4d1d996
+  AWSS3: 282a590bb47e9cd88de24979fb28954399c41c52
+  JGProgressHUD: 12b20a8f4ffe05258f8635c1ab92816e451f904d
+  Mapbox-iOS-SDK: f9292a75e8cd5eb828f4432623bfc48aac42146a
+  ReactiveCocoa: fbd26e9ba60e98417ee47433e59465a98ed9da0f
   ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
   Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
 
-PODFILE CHECKSUM: 73eed998ef853e452cd5193267494303794b59c4
+PODFILE CHECKSUM: 6e1dd956f1a9cd6f0b36b0b029b8c2f8abc784c1
 
-COCOAPODS: 1.6.0.beta.1
+COCOAPODS: 1.5.3
