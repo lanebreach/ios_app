@@ -25,7 +25,7 @@ class NewReportViewModel {
     
     var categorySignal: Signal<String, NoError>
     var okToSendSignal: Signal<Bool, NoError>
-    var locationStatusSignal: Signal<String, NoError>
+    var locationStatusSignal: Signal<Bool, NoError>
     
     let categories: [String] = ["Delivery truck", "Moving truck", "FedEx", "UPS", "USPS",
                                 "Bus",
@@ -52,14 +52,8 @@ class NewReportViewModel {
         }
         
         self.locationStatusSignal = self.currentLocation.signal
-            .map { (currentLocation) -> String in
-                
-                if let loc = currentLocation {
-                    return "Locaction: identified"
-                    //return "Location: \(loc.latitude), \(loc.longitude)"
-                }
-                
-                return "Location: searching..."
+            .map { (currentLocation) -> Bool in
+                return currentLocation != nil
         }
     }
 }
@@ -71,10 +65,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     @IBOutlet weak var takePictureButton: UIButton!
     @IBOutlet weak var categoryTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
-//    @IBOutlet weak var locationTextField: UITextField!
+    @IBOutlet weak var locationButton: UIButton!
     @IBOutlet weak var postReportButton: UIButton!
-    
-    var locationTextField: UITextField = UITextField()  // TODO - this is currently hidden
     
     var viewModel: NewReportViewModel!
     var locationManager = CLLocationManager()
@@ -161,7 +153,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
-        self.locationTextField.reactive.text <~ self.viewModel.locationStatusSignal
+        self.viewModel.locationStatusSignal.observeValues { value in
+            print("locationStatusSignal: \(value)")
+            self.locationButton.setImage(UIImage(named: value ? "location_good" : "location_bad"), for: UIControlState.normal)
+        }
+        
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
         // this is a hack to get the initial state without getting the viewmodel to do it somehow
         self.postReportButton.isEnabled = false
@@ -189,6 +185,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 
+        // assume no location
+        locationButton.setImage(UIImage(named: "location_bad"), for: UIControlState.normal)
+        
         super.viewDidLoad()
     }
     
@@ -254,8 +253,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     @objc func donePicker(_ sender: Any) {
         self.categoryTextField.resignFirstResponder()
     }
+    
+    @IBAction func locationButtonPressed(sender: UIButton) {
+        AppDelegate.showSimpleAlertWithOK(vc: self, self.viewModel.currentLocation.value != nil ?
+            "Current location found. You may now SEND a new report to 311 as long as you have taken a picture and selected a category." :
+            "Cannot determine your location - make sure that Location Services are enabled for this app in Settings.")
+    }
 
-    @IBAction func postTestReport(sender: UIButton) {
+    @IBAction func postReportButtonPressed(sender: UIButton) {
         guard let image = self.imageView.image else {
             return
         }
