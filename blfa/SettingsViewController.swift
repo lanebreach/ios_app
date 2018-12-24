@@ -10,6 +10,17 @@ import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var appVersionLabel: UILabel!
+    
+    override func viewDidLoad() {
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            appVersionLabel.text = "App Version \(appVersion)"
+        } else {
+            appVersionLabel.text = ""
+        }
+        
+        super.viewDidLoad()
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

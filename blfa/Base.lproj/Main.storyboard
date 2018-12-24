@@ -222,14 +222,23 @@
                                     <constraint firstItem="cN3-t9-EZN" firstAttribute="top" secondItem="9WT-HN-TWF" secondAttribute="top" constant="8" id="ybn-96-QrB"/>
                                 </constraints>
                             </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Eu-0z-CDl">
+                                <rect key="frame" x="16" y="586" width="343" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="8Eu-0z-CDl" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="0tt-4e-gTo"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="faP-Fl-ur2" secondAttribute="trailing" constant="16" id="6cB-JR-023"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="width" secondItem="v6B-Zl-xuk" secondAttribute="width" id="JzW-Gs-q9k"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="bottom" secondItem="8Eu-0z-CDl" secondAttribute="bottom" constant="11" id="Ok7-Up-WOa"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="Qjf-1Q-fm8"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="trailing" secondItem="GjX-cO-dCU" secondAttribute="trailing" constant="-8" id="RLc-aA-UVJ"/>
                             <constraint firstItem="faP-Fl-ur2" firstAttribute="top" secondItem="GjX-cO-dCU" secondAttribute="top" constant="8" id="ghu-lE-Py5"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="8Eu-0z-CDl" secondAttribute="trailing" constant="16" id="hKr-Ns-1Ya"/>
                             <constraint firstItem="faP-Fl-ur2" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="i8o-4B-uHR"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="iAt-j1-TdZ"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="top" secondItem="faP-Fl-ur2" secondAttribute="bottom" constant="8" id="nN7-CF-xnn"/>
@@ -241,6 +250,7 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="Settings" image="first" id="nXh-ws-IVk"/>
                     <connections>
+                        <outlet property="appVersionLabel" destination="8Eu-0z-CDl" id="8jX-Di-FHL"/>
                         <outlet property="emailTextField" destination="lCx-JU-5yJ" id="B22-Xd-6qd"/>
                     </connections>
                 </viewController>
