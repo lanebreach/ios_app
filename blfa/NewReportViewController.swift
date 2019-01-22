@@ -323,7 +323,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         present(vc, animated: true)
     }
     
-    @IBAction func changePhotoAction(sender: UIButton) {
+    @IBAction func changePhotoAction(sender: UIButton?) {
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
         
@@ -379,12 +379,12 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
 
             // TODO - send the mediaUrl from uploadImage()
             let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
-            
+
             // concatenate category (if not "Other") with optional description when POSTing (ex: [category] <description>)
             var description: String = ((self.viewModel.category.value != NewReportViewModel.defaultCategory) && (self.viewModel.category.value.count != 0)) ?
                 "[\(self.viewModel.category.value)] " : ""
             description.append(contentsOf: (self.viewModel.description.value.count) != 0 ? self.viewModel.description.value : "Blocked bicycle lane")
-            
+
             let parameters = [
                 "api_key": Keys.apiKey,
                 "service_code": "5a6b5ac2d0521c1134854b01",
@@ -395,13 +395,13 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 "description": description,
                 "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
             ]
-            
+
             // create the form URL-encoded string for the params
             var postString: String = ""
             var first = true
             for (key, value) in parameters {
                 let escapedString = value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-                
+
                 if first {
                     first = false
                 } else {
@@ -409,40 +409,40 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 }
                 postString += "\(key)=\(escapedString)"
             }
-            
+
             // POST it
             let url = URL(string: "http://mobile311-dev.sfgov.org/open311/v2/requests.json")!
             var request = URLRequest(url: url)
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "POST"
             request.httpBody = postString.data(using: .utf8)
-            
+
             self.hud?.textLabel.text = "Uploading details"
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
                 DispatchQueue.main.async {
                     guard let data = data, error == nil else {                                                 // check for fundamental networking error
                         print(error != nil ? "error=\(error!)" : "no data")
-                        
+
                         self.hud?.dismiss()
                         AppDelegate.showSimpleAlertWithOK(vc: self, error != nil ? "ERROR: \(error!)" : "ERROR: no data in server response")
                         return
                     }
-                    
+
                     // check for 201 CREATED
                     if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
                         print("statusCode should be 201, but is \(httpStatus.statusCode)")
                         print("response = \(httpStatus)")
-                        
+
                         self.hud?.dismiss()
                         AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: bad HTTP response code: \(httpStatus.statusCode)")
                         return
                     }
-                    
+
                     self.hud?.dismiss()
                     if let responseString = String(data: data, encoding: .utf8) {
                         // looks like: responseString = [{"token":"5bc6c0f5ff031d6f5b335df0"}]
                         print("responseString = \(responseString)")
-                        
+
                         // check if it's a token
                         let json = try? JSONSerialization.jsonObject(with: data, options: [])
                         if let dictionary = json as? [[String: Any]] {
@@ -474,12 +474,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                             #endif
                         }
                     }
-                    
+
                     // reset for the next submission
                     self.imageView.image = nil
                     self.viewModel.haveImage.value = false
                     self.viewModel.category.value = NewReportViewModel.defaultCategory
                     self.viewModel.description.value = ""
+
+                    self.changePhotoAction(sender: nil)
                 }
             }
             task.resume()
@@ -527,25 +529,27 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         captureSession?.stopRunning()
         
         // Initialise a UIImage with our image data
-        let capturedImage = UIImage.init(data: imageData , scale: 1.0)
-        if let image = capturedImage {
-            // Save our captured image to photos album
-            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-
-            // update the image, hide the preview + photo buttons, slide up the control panel
-            self.imageView.image = image
-            self.previewView.isHidden = true
-            self.cameraButtonsView.isHidden = true
-            UIView.animate(withDuration: 0.25) {
-                self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
-                self.view.layoutIfNeeded()
-            }
-
-            // tell the model that we have an image
-            self.viewModel.haveImage.value = true
-        } else {
-            // TODO - alert
+        guard let capturedImage = UIImage.init(data: imageData , scale: 1.0),
+            let fixedImage = fixOrientation(img: capturedImage) else {
+                
+                AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (failed to fix orientation)")
+                return
         }
+        
+        // Save our captured image to photos album
+        UIImageWriteToSavedPhotosAlbum(fixedImage, nil, nil, nil)
+        
+        // update the image, hide the preview + photo buttons, slide up the control panel
+        self.imageView.image = fixedImage
+        self.previewView.isHidden = true
+        self.cameraButtonsView.isHidden = true
+        UIView.animate(withDuration: 0.25) {
+            self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
+            self.view.layoutIfNeeded()
+        }
+        
+        // tell the model that we have an image
+        self.viewModel.haveImage.value = true
     }
     
     //MARK:- UIImagePickerControllerDelegate methods

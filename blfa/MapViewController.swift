@@ -35,11 +35,11 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
         }
         
         // add Twin Peaks to the map for, well, fun
-        let twinPeaks = MGLPointAnnotation()
-        twinPeaks.coordinate = CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577)
-        twinPeaks.title = "Twin Peaks"
-        twinPeaks.subtitle = "The best place to see the City"
-        mapView.addAnnotation(twinPeaks)
+//        let twinPeaks = MGLPointAnnotation()
+//        twinPeaks.coordinate = CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577)
+//        twinPeaks.title = "Twin Peaks"
+//        twinPeaks.subtitle = "The best place to see the City"
+//        mapView.addAnnotation(twinPeaks)
         
         hud = JGProgressHUD(style: .dark)
         if let hud = hud {
