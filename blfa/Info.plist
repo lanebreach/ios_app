@@ -19,9 +19,11 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This allows you to use captured pictures of lane blockages.</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We save photos that you take to the camera roll</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -54,7 +56,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to post the report to 311</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This allows you to take pictures of lane blockages.</string>
+	<string>We use your camera to allow you to take pictures of lane blockages</string>
 	<key>MGLMapboxAccessToken</key>
 	<string>not_used</string>
 	<key>CFBundleDisplayName</key>

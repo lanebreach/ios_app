@@ -6,6 +6,7 @@
 //  Copyright © 2018 Dale Low. All rights reserved.
 //
 
+import AVFoundation
 import AWSS3
 import CoreLocation
 import JGProgressHUD
@@ -15,6 +16,8 @@ import Result
 import UIKit
 
 class NewReportViewModel {
+    static let defaultCategory: String = "Other"
+    
     let emailAddress: MutableProperty<String>
     let description: MutableProperty<String>
     let category: MutableProperty<String>
@@ -26,12 +29,11 @@ class NewReportViewModel {
     var okToSendSignal: Signal<Bool, NoError>
     var locationStatusSignal: Signal<Bool, NoError>
     
-    let categories: [String] = ["Delivery truck", "Moving truck", "FedEx", "UPS", "USPS",
-                                "Bus",
+    let categories: [String] = ["Private vehicle", "Delivery truck", "Moving truck", "FedEx", "UPS", "USPS", "Bus",
                                 "Uber", "Lyft", "Uber/Lyft",
-                                "Other"]    //  TODO - let user enter optional text to replace "other"?
+                                defaultCategory]    //  TODO/FUTURE - let user enter optional text to replace "other"?
     
-    init() {
+    init(initialCategory: String) {
         self.emailAddress = MutableProperty("")
         self.description = MutableProperty("")
         self.category = MutableProperty("")
@@ -55,22 +57,41 @@ class NewReportViewModel {
             .map { (currentLocation) -> Bool in
                 return currentLocation != nil
         }
+        
+        DispatchQueue.main.async {
+            // set this after configuring categorySignal so that this gets tracked as a change
+            // do this async so that binding code executing immediately after we are constructed will complete first
+            self.category.value = initialCategory
+        }
     }
 }
 
 class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
-    UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
+    AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
 
+    let controlViewToSafeAreaBottomDefault: CGFloat = 16
+    
+    @IBOutlet weak var locationImageView: UIImageView!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var previewView: UIView!
     @IBOutlet weak var takePictureButton: UIButton!
+    
+    @IBOutlet weak var controlView: UIView!
+    @IBOutlet weak var controlViewToSafeAreaBottomConstraint : NSLayoutConstraint!
     @IBOutlet weak var categoryTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
-    @IBOutlet weak var locationButton: UIButton!
+    @IBOutlet weak var cameraButtonsView: UIView!
+    @IBOutlet weak var changePhotoButton: UIButton!
     @IBOutlet weak var postReportButton: UIButton!
     
     var viewModel: NewReportViewModel!
+    
+    // credit: https://medium.com/@rizwanm/https-medium-com-rizwanm-swift-camera-part-1-c38b8b773b2
+    var captureSession: AVCaptureSession?
+    var videoPreviewLayer: AVCaptureVideoPreviewLayer?
+    var capturePhotoOutput: AVCapturePhotoOutput?
+    
     var locationManager = CLLocationManager()
-    var keyboardHeight: CGFloat = 0
     var hud: JGProgressHUD?
     
     //MARK:- Internal methods    
@@ -139,31 +160,30 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     //MARK:- Lifecycle
     override func viewDidLoad() {
-        // Uncomment the line below to get a demo image
-        //self.imageView.image = UIImage.init(imageLiteralResourceName: "block_example")
-        
-        // can't take pics using the sim
-        #if (targetEnvironment(simulator))
-            self.takePictureButton.isEnabled = false
-        #endif
-        
-        self.descriptionTextField.delegate = self
-        
         // model
-        viewModel = NewReportViewModel()
+        viewModel = NewReportViewModel(initialCategory: NewReportViewModel.defaultCategory)
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
         self.descriptionTextField.reactive.text <~ self.viewModel.descriptionSignal
         self.viewModel.locationStatusSignal.observeValues { value in
             print("locationStatusSignal: \(value)")
-            self.locationButton.setImage(UIImage(named: value ? "location_good" : "location_bad"), for: UIControlState.normal)
+            self.locationImageView.image = UIImage(named: value ? "location_good" : "location_bad")
         }
         
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
-        // this is a hack to get the initial state without getting the viewmodel to do it somehow
-        self.postReportButton.isEnabled = false
-                
+        
+        // can't take pics using the sim
+        #if (targetEnvironment(simulator))
+            self.takePictureButton.isEnabled = false
+        #endif
+
+        // hide control view below the screen
+        self.controlViewToSafeAreaBottomConstraint.constant = -self.controlView.frame.height
+        self.controlView.layer.cornerRadius = 5
+        self.cameraButtonsView.layer.cornerRadius = 5
+        self.descriptionTextField.delegate = self
+        
         // category picker/toolbar
         let picker = UIPickerView.init()
         picker.dataSource = self
@@ -187,8 +207,47 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 
-        // assume no location
-        locationButton.setImage(UIImage(named: "location_bad"), for: UIControlState.normal)
+        // set up location icon/tap event handlers
+        locationImageView.image = UIImage(named: "location_bad")
+        
+        let locationImageTap = UITapGestureRecognizer(target:self, action:#selector(self.locationButtonPressed(sender:)))
+        locationImageTap.numberOfTouchesRequired = 1
+        locationImageView.isUserInteractionEnabled = true
+        locationImageView.addGestureRecognizer(locationImageTap)
+        
+        #if (!targetEnvironment(simulator))
+        
+            // preview image
+            let captureDevice = AVCaptureDevice.default(for: .video)
+            if let captureDevice = captureDevice {
+                do {
+                    let input = try AVCaptureDeviceInput(device: captureDevice)
+                    captureSession = AVCaptureSession()
+                    captureSession!.addInput(input)
+                    
+                    videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession!)
+                    videoPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
+                    videoPreviewLayer?.frame = view.layer.bounds
+                    previewView.layer.addSublayer(videoPreviewLayer!)
+                    
+                    // Get an instance of ACCapturePhotoOutput class
+                    capturePhotoOutput = AVCapturePhotoOutput()
+                    capturePhotoOutput?.isHighResolutionCaptureEnabled = true
+                    
+                    // Set the output on the capture session
+                    if let capturePhotoOutput = capturePhotoOutput {
+                        captureSession!.addOutput(capturePhotoOutput)
+                        captureSession!.startRunning()
+                    } else {
+                        // TODO - alert
+                    }
+                } catch {
+                    // TODO - alert
+                    print(error)
+                }
+            }
+        
+        #endif
         
         super.viewDidLoad()
     }
@@ -219,29 +278,41 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     //MARK:- Event Handlers
     @objc func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
-            if self.view.frame.origin.y == 0 {
-                // TODO - this should depend on the y-pos of the text field
-                self.keyboardHeight = keyboardSize.height
-                self.view.frame.origin.y -= self.keyboardHeight
+            if self.controlViewToSafeAreaBottomConstraint.constant == controlViewToSafeAreaBottomDefault {
+                UIView.animate(withDuration: 0.25) {
+                    self.controlViewToSafeAreaBottomConstraint.constant += keyboardSize.height
+                    self.view.layoutIfNeeded()
+                }
             }
         }
     }
     
     @objc func keyboardWillHide(notification: NSNotification) {
         if let _ = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.cgRectValue {
-            if self.view.frame.origin.y != 0 {
-                // use our stored value cuz the height might have changed
-                self.view.frame.origin.y += self.keyboardHeight
+            if self.controlViewToSafeAreaBottomConstraint.constant != controlViewToSafeAreaBottomDefault {
+                UIView.animate(withDuration: 0.25) {
+                    self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
+                    self.view.layoutIfNeeded()
+                }
             }
         }
     }
     
     @IBAction func takePicureAction(sender: UIButton) {
-        let vc = UIImagePickerController()
-        vc.sourceType = .camera
-        vc.allowsEditing = false
-        vc.delegate = self
-        present(vc, animated: true)
+        // Make sure capturePhotoOutput is valid
+        guard let capturePhotoOutput = self.capturePhotoOutput else { return }
+        
+        // Get an instance of AVCapturePhotoSettings class
+        let photoSettings = AVCapturePhotoSettings()
+        
+        // Set photo settings for our need
+        photoSettings.isAutoStillImageStabilizationEnabled = true
+        photoSettings.isHighResolutionPhotoEnabled = true
+        photoSettings.flashMode = .auto
+        
+        // Call capturePhoto method by passing our photo settings and a
+        // delegate implementing AVCapturePhotoCaptureDelegate
+        capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
     }
     
     @IBAction func photoLibraryAction(sender: UIButton) {
@@ -252,17 +323,34 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         present(vc, animated: true)
     }
     
-    @objc func donePicker(_ sender: Any) {
+    @IBAction func changePhotoAction(sender: UIButton) {
         self.categoryTextField.resignFirstResponder()
+        self.descriptionTextField.resignFirstResponder()
+        
+        // show the preview + photo buttons, slide down the control panel
+        self.previewView.isHidden = false
+        self.cameraButtonsView.isHidden = false
+        UIView.animate(withDuration: 0.25) {
+            self.controlViewToSafeAreaBottomConstraint.constant = -self.controlView.frame.height
+            self.view.layoutIfNeeded()
+        }
+        
+        captureSession?.startRunning()
     }
     
-    @IBAction func locationButtonPressed(sender: UIButton) {
+    @objc func locationButtonPressed(sender: UITapGestureRecognizer) {
+        self.categoryTextField.resignFirstResponder()
+        self.descriptionTextField.resignFirstResponder()
+
         AppDelegate.showSimpleAlertWithOK(vc: self, self.viewModel.currentLocation.value != nil ?
             "Current location found. You may now SEND a new report to 311 as long as you have taken a picture and selected a category." :
             "Cannot determine your location - make sure that Location Services are enabled for this app in Settings.")
     }
 
     @IBAction func postReportButtonPressed(sender: UIButton) {
+        self.categoryTextField.resignFirstResponder()
+        self.descriptionTextField.resignFirstResponder()
+
         guard let image = self.imageView.image else {
             return
         }
@@ -292,8 +380,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             // TODO - send the mediaUrl from uploadImage()
             let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
             
-            // concatenate category with optional description when POSTing (ex: [category] <description>)
-            var description: String = self.viewModel.category.value.count != 0 ? "[\(self.viewModel.category.value)] " : ""
+            // concatenate category (if not "Other") with optional description when POSTing (ex: [category] <description>)
+            var description: String = ((self.viewModel.category.value != NewReportViewModel.defaultCategory) && (self.viewModel.category.value.count != 0)) ?
+                "[\(self.viewModel.category.value)] " : ""
             description.append(contentsOf: (self.viewModel.description.value.count) != 0 ? self.viewModel.description.value : "Blocked bicycle lane")
             
             let parameters = [
@@ -389,7 +478,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     // reset for the next submission
                     self.imageView.image = nil
                     self.viewModel.haveImage.value = false
-                    self.viewModel.category.value = ""
+                    self.viewModel.category.value = NewReportViewModel.defaultCategory
                     self.viewModel.description.value = ""
                 }
             }
@@ -397,11 +486,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
     }
     
-    //MARK:- CLLocationManager delegate methods
+    //MARK:- CLLocationManagerDelegate methods
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if locations.count > 0 {
             let location = locations[0]
-            // TOOD - what's a reasonble requirement for accuracy?
+            // TOOD - what's a reasonable requirement for accuracy?
             if location.horizontalAccuracy < 50 {
                 print("got location \(location.coordinate)")
                 self.viewModel.currentLocation.value = location.coordinate
@@ -414,7 +503,52 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         AppDelegate.showSimpleAlertWithOK(vc: self, "Unable to access your current location")
     }
     
-    //MARK:- UIImagePickerControllerDelegate delegate methods
+    //MARK:- AVCapturePhotoCaptureDelegate methods
+    func photoOutput(_ captureOutput: AVCapturePhotoOutput,
+                     didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?,
+                     previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?,
+                     resolvedSettings: AVCaptureResolvedPhotoSettings,
+                     bracketSettings: AVCaptureBracketedStillImageSettings?,
+                     error: Error?) {
+        
+        // Make sure we get some photo sample buffer
+        guard error == nil, let photoSampleBuffer = photoSampleBuffer else {
+            // TODO - alert
+            print("Error capturing photo: \(String(describing: error))")
+            return
+        }
+        
+        // Convert photo same buffer to a jpeg image data
+        guard let imageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) else {
+            // TODO - alert
+            return
+        }
+        
+        captureSession?.stopRunning()
+        
+        // Initialise a UIImage with our image data
+        let capturedImage = UIImage.init(data: imageData , scale: 1.0)
+        if let image = capturedImage {
+            // Save our captured image to photos album
+            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+
+            // update the image, hide the preview + photo buttons, slide up the control panel
+            self.imageView.image = image
+            self.previewView.isHidden = true
+            self.cameraButtonsView.isHidden = true
+            UIView.animate(withDuration: 0.25) {
+                self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
+                self.view.layoutIfNeeded()
+            }
+
+            // tell the model that we have an image
+            self.viewModel.haveImage.value = true
+        } else {
+            // TODO - alert
+        }
+    }
+    
+    //MARK:- UIImagePickerControllerDelegate methods
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         picker.dismiss(animated: true)
         
@@ -429,13 +563,22 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             return
         }
 
+        captureSession?.stopRunning()
+
+        // update the image, hide the preview + photo buttons, slide up the control panel
         self.imageView.image = fixedImage
+        self.previewView.isHidden = true
+        self.cameraButtonsView.isHidden = true
+        UIView.animate(withDuration: 0.25) {
+            self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
+            self.view.layoutIfNeeded()
+        }
         
         // tell the model that we have an image
         self.viewModel.haveImage.value = true
     }
     
-    //MARK:- UIPickerViewDataSource methods
+    //MARK:- UIPickerViewDataSource/UIPickerViewDelegate methods
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
@@ -444,7 +587,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         return self.viewModel.categories.count
     }
     
-    //MARK:- UIPickerViewDelegate methods
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return self.viewModel.categories[row]
     }
@@ -452,12 +594,26 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.viewModel.category.value = self.viewModel.categories[row]
     }
+    
+    @objc func donePicker(_ sender: Any) {
+        if let picker = self.categoryTextField.inputView as? UIPickerView {
+            // update the category even if the user didn't change the value (only applies when "Other" is initially selected)
+            self.viewModel.category.value = self.viewModel.categories[picker.selectedRow(inComponent: 0)]
+        }
+        
+        self.categoryTextField.resignFirstResponder()
+    }
 
     //MARK:- UITextFieldDelegate
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        self.viewModel.description.value = textField.text ?? ""
+
+        return true
+    }
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         
-        self.viewModel.description.value = textField.text ?? ""
         return true
     }
 }
