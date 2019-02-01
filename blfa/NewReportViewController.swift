@@ -72,6 +72,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     let controlViewToSafeAreaBottomDefault: CGFloat = 16
     
     @IBOutlet weak var locationImageView: UIImageView!
+    @IBOutlet weak var flashImageView: UIImageView!
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var previewView: UIView!
     @IBOutlet weak var takePictureButton: UIButton!
@@ -90,6 +91,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var captureSession: AVCaptureSession?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     var capturePhotoOutput: AVCapturePhotoOutput?
+    var flashMode: AVCaptureDevice.FlashMode = .auto
     
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
@@ -168,7 +170,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.descriptionTextField.reactive.text <~ self.viewModel.descriptionSignal
         self.viewModel.locationStatusSignal.observeValues { value in
             print("locationStatusSignal: \(value)")
-            self.locationImageView.image = UIImage(named: value ? "location_good" : "location_bad")
+            self.locationImageView.image = UIImage(named: value ? "ic_location_black" : "ic_location_bad_black")
         }
         
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
@@ -208,12 +210,19 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 
         // set up location icon/tap event handlers
-        locationImageView.image = UIImage(named: "location_bad")
-        
-        let locationImageTap = UITapGestureRecognizer(target:self, action:#selector(self.locationButtonPressed(sender:)))
-        locationImageTap.numberOfTouchesRequired = 1
+        locationImageView.image = UIImage(named: "ic_location_bad_black")
+        var tapper = UITapGestureRecognizer(target:self, action:#selector(self.locationButtonPressed(sender:)))
+        tapper.numberOfTouchesRequired = 1
         locationImageView.isUserInteractionEnabled = true
-        locationImageView.addGestureRecognizer(locationImageTap)
+        locationImageView.addGestureRecognizer(tapper)
+        
+        // set up flash icon/tap event handlers - start with auto
+        flashMode = .off
+        flashButtonPressed(sender: nil)
+        tapper = UITapGestureRecognizer(target:self, action:#selector(self.flashButtonPressed(sender:)))
+        tapper.numberOfTouchesRequired = 1
+        flashImageView.isUserInteractionEnabled = true
+        flashImageView.addGestureRecognizer(tapper)
         
         #if (!targetEnvironment(simulator))
         
@@ -308,7 +317,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // Set photo settings for our need
         photoSettings.isAutoStillImageStabilizationEnabled = true
         photoSettings.isHighResolutionPhotoEnabled = true
-        photoSettings.flashMode = .auto
+        photoSettings.flashMode = flashMode
         
         // Call capturePhoto method by passing our photo settings and a
         // delegate implementing AVCapturePhotoCaptureDelegate
@@ -347,6 +356,20 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             "Cannot determine your location - make sure that Location Services are enabled for this app in Settings.")
     }
 
+    @objc func flashButtonPressed(sender: UITapGestureRecognizer?) {
+        switch flashMode {
+        case .auto:
+            flashMode = .on
+            flashImageView.image = UIImage(named: "ic_flash_on_black")
+        case .on:
+            flashMode = .off
+            flashImageView.image = UIImage(named: "ic_flash_off_black")
+        case .off:
+            flashMode = .auto
+            flashImageView.image = UIImage(named: "ic_flash_auto_black")
+        }
+    }
+    
     @IBAction func postReportButtonPressed(sender: UIButton) {
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
@@ -370,7 +393,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             hud.show(in: self.view)
         }
 
+        print("\(Date().timeIntervalSince1970) start image upload")
         self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
+            print("\(Date().timeIntervalSince1970) start metadata upload")
             guard error == nil else {
                 self.hud?.dismiss()
                 AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed with \(error!)")
@@ -474,6 +499,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                             #endif
                         }
                     }
+                    
+                    print("\(Date().timeIntervalSince1970) done metadata upload")
 
                     // reset for the next submission
                     self.imageView.image = nil

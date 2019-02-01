@@ -67,11 +67,18 @@
                                     <constraint firstItem="2eh-TS-pcI" firstAttribute="centerY" secondItem="DuW-Gu-DQ3" secondAttribute="centerY" id="vNR-hG-53v"/>
                                 </constraints>
                             </view>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="location_bad" translatesAutoresizingMaskIntoConstraints="NO" id="RlZ-m4-emX">
-                                <rect key="frame" x="8" y="28" width="50" height="50"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_location_black" translatesAutoresizingMaskIntoConstraints="NO" id="RlZ-m4-emX">
+                                <rect key="frame" x="8" y="28" width="48" height="48"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="50" id="EbO-f2-CMs"/>
-                                    <constraint firstAttribute="width" constant="50" id="kv2-Gd-3QH"/>
+                                    <constraint firstAttribute="height" constant="48" id="EbO-f2-CMs"/>
+                                    <constraint firstAttribute="width" constant="48" id="kv2-Gd-3QH"/>
+                                </constraints>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_flash_auto_black" translatesAutoresizingMaskIntoConstraints="NO" id="fdP-mZ-nwU">
+                                <rect key="frame" x="319" y="28" width="48" height="48"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="48" id="08y-oO-wpH"/>
+                                    <constraint firstAttribute="width" constant="48" id="XgF-om-vxc"/>
                                 </constraints>
                             </imageView>
                             <view alpha="0.80000000000000004" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V6y-7n-0Qm">
@@ -188,11 +195,13 @@
                             <constraint firstItem="DuW-Gu-DQ3" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" id="7Q1-2d-zGw"/>
                             <constraint firstItem="RlZ-m4-emX" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" constant="8" id="BOv-mN-TUr"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="DuW-Gu-DQ3" secondAttribute="trailing" id="IVG-OM-JBt"/>
+                            <constraint firstItem="fdP-mZ-nwU" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" constant="8" id="Mvg-dt-xbo"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="DuW-Gu-DQ3" secondAttribute="bottom" id="OiZ-fL-u9T"/>
                             <constraint firstItem="V6y-7n-0Qm" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="8" id="QSz-ab-Fuf"/>
                             <constraint firstItem="ID6-60-cVW" firstAttribute="centerX" secondItem="O1u-W8-tvY" secondAttribute="centerX" id="XTF-Tf-idX"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="ID6-60-cVW" secondAttribute="bottom" constant="16" id="ZvD-fu-Gl0"/>
                             <constraint firstItem="RlZ-m4-emX" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="8" id="dC1-q6-T1L"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="fdP-mZ-nwU" secondAttribute="trailing" constant="8" id="djF-dP-mPW"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="V6y-7n-0Qm" secondAttribute="bottom" constant="228" id="lUt-4t-N4E"/>
                             <constraint firstItem="DuW-Gu-DQ3" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" id="rJb-Gz-IQe"/>
                         </constraints>
@@ -206,6 +215,7 @@
                         <outlet property="controlView" destination="V6y-7n-0Qm" id="dTE-jY-h40"/>
                         <outlet property="controlViewToSafeAreaBottomConstraint" destination="lUt-4t-N4E" id="NFZ-3n-jiK"/>
                         <outlet property="descriptionTextField" destination="6hU-FG-seT" id="yGW-tr-LrM"/>
+                        <outlet property="flashImageView" destination="fdP-mZ-nwU" id="p9Q-ic-L2Q"/>
                         <outlet property="imageView" destination="DuW-Gu-DQ3" id="WcA-qg-Ega"/>
                         <outlet property="locationImageView" destination="RlZ-m4-emX" id="oZB-wP-KRW"/>
                         <outlet property="postReportButton" destination="l2o-87-Qdm" id="jGM-lR-tmu"/>
@@ -333,8 +343,9 @@
         <image name="bikelane1" width="175" height="249"/>
         <image name="camera_icon" width="48" height="48"/>
         <image name="gear_icon" width="25" height="25"/>
+        <image name="ic_flash_auto_black" width="48" height="48"/>
+        <image name="ic_location_black" width="48" height="48"/>
         <image name="library_icon" width="48" height="48"/>
-        <image name="location_bad" width="180" height="180"/>
         <image name="map_icon" width="23" height="24"/>
         <image name="no_bike_icon" width="25" height="25"/>
     </resources>
