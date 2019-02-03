@@ -6,11 +6,11 @@
 //  Copyright © 2018 Dale Low. All rights reserved.
 //
 
-import UIKit
 import AWSDynamoDB
 import AWSS3
 import MapKit
 import Mapbox
+import UIKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AWSS3TransferUtility.register(with: configurationUSWest1!, forKey: "USWest1S3TransferUtility")
         
         MGLAccountManager.accessToken = Keys.mapboxKey
-
+        
         return true
     }
 

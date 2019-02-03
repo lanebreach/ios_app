@@ -9,6 +9,7 @@
 import AVFoundation
 import AWSS3
 import CoreLocation
+import EasyTipView
 import JGProgressHUD
 import ReactiveCocoa
 import ReactiveSwift
@@ -67,7 +68,7 @@ class NewReportViewModel {
 }
 
 class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
-    AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
+    AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate, EasyTipViewDelegate {
 
     let controlViewToSafeAreaBottomDefault: CGFloat = 16
     
@@ -95,6 +96,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
+    var firstView: Bool = true
     
     //MARK:- Internal methods    
     func uploadImage(with data: Data, filename: String, completion: @escaping (Error?) -> Void) {
@@ -158,6 +160,19 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
         
         return result
+    }
+    
+    func tipViewPreferences(verticalOffset: CGFloat = 5,
+                            arrowPosition: EasyTipView.ArrowPosition = .bottom) -> EasyTipView.Preferences {
+        
+        var preferences = EasyTipView.Preferences()
+        preferences.drawing.font = UIFont(name: "Futura-Medium", size: 15)!
+        preferences.drawing.foregroundColor = UIColor.white
+        preferences.drawing.backgroundColor = UIColor(hue:0.46, saturation:0.99, brightness:0.6, alpha:1)
+        preferences.drawing.arrowHeight = verticalOffset
+        preferences.drawing.arrowPosition = arrowPosition
+        
+        return preferences
     }
     
     //MARK:- Lifecycle
@@ -281,6 +296,28 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             self.locationManager.startUpdatingLocation()
         } else {
             AppDelegate.showSimpleAlertWithOK(vc: self, "Please turn on location services to post a new report")
+        }
+        
+        if firstView {
+            EasyTipView.show(forView: cameraButtonsView,
+                             withinSuperview: self.view,
+                             text: "Welcome to Lane Breach!\n\nUse these buttons to take a picture of a bike lane blockage or to select an existing photo",
+                             preferences: tipViewPreferences(),
+                             delegate: self)
+            
+            EasyTipView.show(forView: locationImageView,
+                             withinSuperview: self.view,
+                             text: "This icon lets you know if the app has found your location",
+                             preferences: tipViewPreferences(),
+                             delegate: self)
+
+            EasyTipView.show(forView: flashImageView,
+                             withinSuperview: self.view,
+                             text: "Touch this icon to change the camera's flash mode",
+                             preferences: tipViewPreferences(verticalOffset: 100),
+                             delegate: self)
+
+            firstView = false
         }
     }
     
@@ -646,6 +683,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         textField.resignFirstResponder()
         
         return true
+    }
+    
+    //MARK:- EasyTipViewDelegate
+    func easyTipViewDidDismiss(_ tipView : EasyTipView) {
+        
     }
 }
 
