@@ -4,6 +4,7 @@ PODS:
     - AWSCore (= 2.6.35)
   - AWSS3 (2.6.35):
     - AWSCore (= 2.6.35)
+  - EasyTipView (2.0.1)
   - JGProgressHUD (2.0.3)
   - Mapbox-iOS-SDK (4.7.1)
   - ReactiveCocoa (8.0.2):
@@ -16,6 +17,7 @@ DEPENDENCIES:
   - AWSCore (~> 2.6.13)
   - AWSDynamoDB
   - AWSS3 (~> 2.6.0)
+  - EasyTipView (~> 2.0.0)
   - JGProgressHUD
   - Mapbox-iOS-SDK (~> 4.6)
   - ReactiveCocoa (~> 8.0)
@@ -25,6 +27,7 @@ SPEC REPOS:
     - AWSCore
     - AWSDynamoDB
     - AWSS3
+    - EasyTipView
     - JGProgressHUD
     - Mapbox-iOS-SDK
     - ReactiveCocoa
@@ -35,12 +38,13 @@ SPEC CHECKSUMS:
   AWSCore: 2dab62ef2e5ca5d8c72c6cbdb3a6ea1532c27c2b
   AWSDynamoDB: f4902fc37384dcf9547e2d8a32a5b208d4d1d996
   AWSS3: 282a590bb47e9cd88de24979fb28954399c41c52
+  EasyTipView: 1515544456d6e943240012e9be5d25d1bb766603
   JGProgressHUD: 12b20a8f4ffe05258f8635c1ab92816e451f904d
   Mapbox-iOS-SDK: f9292a75e8cd5eb828f4432623bfc48aac42146a
   ReactiveCocoa: fbd26e9ba60e98417ee47433e59465a98ed9da0f
   ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
   Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
 
-PODFILE CHECKSUM: 6e1dd956f1a9cd6f0b36b0b029b8c2f8abc784c1
+PODFILE CHECKSUM: fa51343c1a81fd71c6ba121414fead83dc3b7e60
 
 COCOAPODS: 1.5.3

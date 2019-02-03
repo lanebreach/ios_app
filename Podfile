@@ -12,4 +12,5 @@ target 'blfa' do
   pod 'ReactiveCocoa', '~> 8.0'
   pod 'Mapbox-iOS-SDK', '~> 4.6'
   pod 'JGProgressHUD'
+  pod 'EasyTipView', '~> 2.0.0'
 end
