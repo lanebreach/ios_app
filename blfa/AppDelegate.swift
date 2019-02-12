@@ -53,10 +53,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
     
-    class func showSimpleAlertWithOK(vc: UIViewController, _ message: String) {
+    class func showSimpleAlertWithOK(vc: UIViewController, _ message: String, button2title: String? = nil,
+        button2handler: ((UIAlertAction) -> Void)? = nil) {
+        
         let alertFunc: () -> Void = {
             let alert = UIAlertController(title: "Alert", message: message, preferredStyle: UIAlertControllerStyle.alert)
             alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            if let button2title = button2title,
+                let button2handler = button2handler {
+                
+                alert.addAction(UIAlertAction(title: button2title, style: UIAlertActionStyle.default, handler: button2handler))
+            }
             vc.present(alert, animated: true, completion: nil)
         }
         
