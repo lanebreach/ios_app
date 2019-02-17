@@ -20,7 +20,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate, EasyTipViewDelegate {
 
     let controlViewToSafeAreaBottomDefault: CGFloat = 16
-    
+
     @IBOutlet weak var locationImageView: UIImageView!
     @IBOutlet weak var flashImageView: UIImageView!
     @IBOutlet weak var imageView: UIImageView!
@@ -114,6 +114,21 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 AppDelegate.showSimpleAlertWithOK(vc: self, "Please turn on location services to post a new report")
             }
         }
+    }
+    
+    func locationIsInSanFrancisco(_ location: CLLocationCoordinate2D) -> Bool {
+        let kMinLat: CLLocationDegrees = 37.683691
+        let kMaxLat: CLLocationDegrees = 37.822322
+        let kMinLong: CLLocationDegrees = -122.527336
+        let kMaxLong: CLLocationDegrees = -122.335033
+
+        if (location.latitude < kMinLat) || (location.latitude > kMaxLat) ||
+            (location.longitude < kMinLong) || (location.longitude > kMaxLong) {
+            
+            return false
+        }
+        
+        return true
     }
     
     // reset for the next submission
@@ -219,11 +234,18 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                         captureSession!.addOutput(capturePhotoOutput)
                         captureSession!.startRunning()
                     } else {
-                        // TODO - alert
+                        #if DEBUG
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: AVCapturePhotoOutput() failed")
+                        #else
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
+                        #endif
                     }
                 } catch {
-                    // TODO - alert
-                    print(error)
+                    #if DEBUG
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: capture setup error: \(error)")
+                    #else
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
+                    #endif
                 }
             }
         
@@ -396,6 +418,12 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             return
         }
         
+        // we already checked a library image earlier
+        if !locationIsInSanFrancisco(currentLocation) {
+            AppDelegate.showSimpleAlertWithOK(vc: self, "Sorry, you appear to be outside San Francisco. This app is only used to report bike lane violations within SF.")
+            return
+        }
+        
         // TODO: probably move into model
         let filename = UUID().uuidString
         
@@ -416,6 +444,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                                             self.hud?.textLabel.text = message
         }) { (serviceRequestId, token, error) in
             self.hud?.dismiss()
+            
+            var addAndResetReport = false
             if let error = error {
                 var gotTransientError = false
                 if let error = error as? NetworkManagerError {
@@ -442,7 +472,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
                     #endif
                     
-                    self.resetReport()
+                    addAndResetReport = true
                 }
             } else {
                 #if DEBUG
@@ -455,13 +485,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
                 #endif
                 
+                addAndResetReport = true
+            }
+            
+            if addAndResetReport {
                 ReportManager.shared.addReport(location: currentLocation,
                                                description: self.viewModel.description.value,
                                                category: self.viewModel.category.value,
                                                serviceRequestId: serviceRequestId,
                                                token: token,
                                                httpPost: NetworkManager.shared.debugLastHttpPost)
-
+            
                 self.resetReport()
             }
         }
@@ -477,7 +511,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         if locations.count > 0 {
             let location = locations[0]
             // TOOD - what's a reasonable requirement for accuracy?
-            // TODO - check if we're outside of San Francisco!
             if location.horizontalAccuracy < 50 {
                 print("got location \(location.coordinate)")
                 self.viewModel.currentLocation.value = location.coordinate
@@ -495,14 +528,21 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         // Make sure we get some photo sample buffer
         guard error == nil else {
-            // TODO - alert
-            print("Error capturing photo: \(String(describing: error))")
+            #if DEBUG
+            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed, error: \(String(describing: error))")
+            #else
+            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed")
+            #endif
             return
         }
         
         // Convert photo same buffer to a jpeg image data
         guard let imageData = photo.fileDataRepresentation() else {
-            // TODO - alert
+            #if DEBUG
+            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: fileDataRepresentation() failed")
+            #else
+            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed")
+            #endif
             return
         }
 
@@ -558,6 +598,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 return
         }
         
+        if !locationIsInSanFrancisco(coordinate) {
+            AppDelegate.showSimpleAlertWithOK(vc: self, "Sorry, this photo doesn't appear to have been taken in San Francisco. This app is only used to report bike lane violations within SF.")
+            return
+        }
+        
         self.viewModel.currentLocation.value = coordinate
 
         captureSession?.stopRunning()
@@ -603,8 +648,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
 
     //MARK:- UITextFieldDelegate
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        self.viewModel.description.value = textField.text ?? ""
-
+        // update the description AFTER we return
+        DispatchQueue.main.async {
+            self.viewModel.description.value = textField.text ?? ""
+        }
+        
         return true
     }
 

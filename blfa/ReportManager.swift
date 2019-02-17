@@ -72,4 +72,8 @@ class ReportManager {
     func getReports() -> [[String: Any]]? {
         return UserDefaults.standard.array(forKey: "reports") as? [[String: Any]]
     }
+    
+    func clearReports() {
+        return UserDefaults.standard.removeObject(forKey: "reports")
+    }
 }

@@ -10,9 +10,16 @@ import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var resetReportsLabel: UILabel!
     @IBOutlet weak var appVersionLabel: UILabel!
     
+    //MARK:- Lifecycle
     override func viewDidLoad() {
+        let tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetReportsButtonPressed(sender:)))
+        tapper.numberOfTouchesRequired = 1
+        resetReportsLabel.isUserInteractionEnabled = true
+        resetReportsLabel.addGestureRecognizer(tapper)
+
         if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             appVersionLabel.text = "App Version \(appVersion)"
         } else {
@@ -35,6 +42,16 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         
         let emailTest = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
         return emailTest.evaluate(with: testStr)
+    }
+    
+    //MARK:- Event Handlers
+    @objc func resetReportsButtonPressed(sender: UITapGestureRecognizer?) {
+        AppDelegate.showSimpleAlertWithOK(vc: self, "Touch Reset to clear your list of previously uploaded reports from the Reports screen. This does not affect reports uploaded to 311.",
+                                          button2title: "Reset") { (_) in
+
+                                            ReportManager.shared.clearReports()
+                                            AppDelegate.showSimpleAlertWithOK(vc: self, "All reports removed from the map")
+        }
     }
     
     //MARK:- UITextFieldDelegate

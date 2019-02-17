@@ -15,7 +15,10 @@ import Mapbox
 class MapViewController: UIViewController, MGLMapViewDelegate {
     var mapView: MGLMapView?
     var hud: JGProgressHUD?
+    var mapLoaded = false
+    var viewVisible = false
     
+    //MARK:- Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -41,25 +44,28 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
             hud.show(in: self.view)
         }
     }
-    
-    func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
-        print("didFinishLoading")
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
         
-        hud?.dismiss()
-    }
-    
-    func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
-        // Always allow callouts to popup when annotations are tapped.
-        return true
+        viewVisible = false
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        viewVisible = true
+        if mapLoaded {
+            addReportAnnotations()
+        }
+    }
+    
+    //MARK:- Internal methods
+    func addReportAnnotations() {
         guard let mapView = mapView else {
             return
         }
-
+        
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "M/dd h:mma"
         
@@ -76,7 +82,7 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
             twinPeaks.subtitle = "The best place to see the City"
             mapView.addAnnotation(twinPeaks)
         }
-
+        
         let kMaxDescriptionLen = 16
         if let reports = ReportManager.shared.getReports() {
             for report in reports {
@@ -102,7 +108,24 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
                 }
                 
                 mapView.addAnnotation(reportAnnotation)
-            }            
+            }
         }
+    }
+
+    //MARK:- MGLMapViewDelegate
+    func mapView(_ mapView: MGLMapView, didFinishLoading style: MGLStyle) {
+        print("didFinishLoading")
+        
+        hud?.dismiss()
+        mapLoaded = true
+
+        if viewVisible {
+            addReportAnnotations()
+        }
+    }
+    
+    func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
+        // Always allow callouts to popup when annotations are tapped.
+        return true
     }
 }

@@ -222,14 +222,14 @@
                                 <rect key="frame" x="0.0" y="-14.5" width="375" height="667"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="faP-Fl-ur2">
-                                <rect key="frame" x="16" y="28" width="343" height="183"/>
+                                <rect key="frame" x="16" y="28" width="343" height="208"/>
                                 <string key="text">Lane Breach makes it easy to report bike lane blockages to San Francisco's 311 service: just take a picture, select a category (Uber, bus, etc), optional description and press SEND.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9WT-HN-TWF" userLabel="Email View">
-                                <rect key="frame" x="8" y="219" width="359" height="200"/>
+                                <rect key="frame" x="8" y="244" width="359" height="150"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Email:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cN3-t9-EZN">
                                         <rect key="frame" x="8" y="8" width="60" height="21"/>
@@ -261,11 +261,28 @@
                                     <constraint firstItem="lCx-JU-5yJ" firstAttribute="leading" secondItem="cN3-t9-EZN" secondAttribute="trailing" id="Yt0-kI-58e"/>
                                     <constraint firstItem="Qqf-JY-0XU" firstAttribute="leading" secondItem="9WT-HN-TWF" secondAttribute="leading" constant="8" id="Zdx-L4-uMS"/>
                                     <constraint firstItem="lCx-JU-5yJ" firstAttribute="centerY" secondItem="cN3-t9-EZN" secondAttribute="centerY" id="gcy-XE-PiW"/>
-                                    <constraint firstAttribute="height" constant="200" id="h9q-rk-3Hm"/>
+                                    <constraint firstAttribute="height" constant="150" id="h9q-rk-3Hm"/>
                                     <constraint firstItem="cN3-t9-EZN" firstAttribute="leading" secondItem="9WT-HN-TWF" secondAttribute="leading" constant="8" id="khf-uW-Fyd"/>
                                     <constraint firstItem="cN3-t9-EZN" firstAttribute="top" secondItem="9WT-HN-TWF" secondAttribute="top" constant="8" id="ybn-96-QrB"/>
                                 </constraints>
                             </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1iN-j6-ZhF">
+                                <rect key="frame" x="16" y="402" width="343" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="9Rq-2f-o3c"/>
+                                </constraints>
+                                <attributedString key="attributedText">
+                                    <fragment content="Clear uploaded reports">
+                                        <attributes>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <font key="NSFont" size="18" name="HelveticaNeue"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                            <integer key="NSUnderline" value="1"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Eu-0z-CDl">
                                 <rect key="frame" x="16" y="586" width="343" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -277,10 +294,13 @@
                         <constraints>
                             <constraint firstItem="8Eu-0z-CDl" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="0tt-4e-gTo"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="faP-Fl-ur2" secondAttribute="trailing" constant="16" id="6cB-JR-023"/>
+                            <constraint firstItem="1iN-j6-ZhF" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="A3e-VM-X1e"/>
+                            <constraint firstItem="1iN-j6-ZhF" firstAttribute="top" secondItem="9WT-HN-TWF" secondAttribute="bottom" constant="8" id="DSV-1A-5vh"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="width" secondItem="v6B-Zl-xuk" secondAttribute="width" id="JzW-Gs-q9k"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="bottom" secondItem="8Eu-0z-CDl" secondAttribute="bottom" constant="11" id="Ok7-Up-WOa"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="Qjf-1Q-fm8"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="trailing" secondItem="GjX-cO-dCU" secondAttribute="trailing" constant="-8" id="RLc-aA-UVJ"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="1iN-j6-ZhF" secondAttribute="trailing" constant="16" id="RiY-1J-225"/>
                             <constraint firstItem="faP-Fl-ur2" firstAttribute="top" secondItem="GjX-cO-dCU" secondAttribute="top" constant="8" id="ghu-lE-Py5"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="8Eu-0z-CDl" secondAttribute="trailing" constant="16" id="hKr-Ns-1Ya"/>
                             <constraint firstItem="faP-Fl-ur2" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="i8o-4B-uHR"/>
@@ -296,6 +316,7 @@
                     <connections>
                         <outlet property="appVersionLabel" destination="8Eu-0z-CDl" id="8jX-Di-FHL"/>
                         <outlet property="emailTextField" destination="lCx-JU-5yJ" id="B22-Xd-6qd"/>
+                        <outlet property="resetReportsLabel" destination="1iN-j6-ZhF" id="2ZE-By-633"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="voY-UU-bvM" userLabel="First Responder" sceneMemberID="firstResponder"/>
