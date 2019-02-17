@@ -13,17 +13,18 @@ import MapKit
 import Mapbox
 
 class MapViewController: UIViewController, MGLMapViewDelegate {
-    @IBOutlet weak var mapView: MKMapView!
+    var mapView: MGLMapView?
     var hud: JGProgressHUD?
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // hide the old map view since we're not using it right now
-        self.mapView.isHidden = true
-        
         let url = URL(string: "mapbox://styles/agaesser/cjn5lb26b0gty2rnr3laj0ljd")
-        let mapView = MGLMapView(frame: view.bounds, styleURL: url)
+        mapView = MGLMapView(frame: view.bounds, styleURL: url)
+        guard let mapView = mapView else {
+            return
+        }
+        
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         mapView.delegate = self
         view.addSubview(mapView)
@@ -33,13 +34,6 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
             // note: setting the center doesn't seem to work after MGLMapView construction
             mapView.setCenter(CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577), zoomLevel: 11, animated: true)
         }
-        
-        // add Twin Peaks to the map for, well, fun
-//        let twinPeaks = MGLPointAnnotation()
-//        twinPeaks.coordinate = CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577)
-//        twinPeaks.title = "Twin Peaks"
-//        twinPeaks.subtitle = "The best place to see the City"
-//        mapView.addAnnotation(twinPeaks)
         
         hud = JGProgressHUD(style: .dark)
         if let hud = hud {
@@ -57,5 +51,58 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
     func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {
         // Always allow callouts to popup when annotations are tapped.
         return true
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        guard let mapView = mapView else {
+            return
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "M/dd h:mma"
+        
+        // update all annotations of user-submitted reports
+        if let annotations = mapView.annotations {
+            mapView.removeAnnotations(annotations)
+        }
+        
+        // add Twin Peaks to the map for, well, fun
+        if AppDelegate.getMockTestEnable(for: .showTwinPeaks) {
+            let twinPeaks = MGLPointAnnotation()
+            twinPeaks.coordinate = CLLocationCoordinate2D(latitude: 37.759108, longitude: -122.450577)
+            twinPeaks.title = "Twin Peaks"
+            twinPeaks.subtitle = "The best place to see the City"
+            mapView.addAnnotation(twinPeaks)
+        }
+
+        let kMaxDescriptionLen = 16
+        if let reports = ReportManager.shared.getReports() {
+            for report in reports {
+                let reportAnnotation = MGLPointAnnotation()
+                reportAnnotation.coordinate = CLLocationCoordinate2D(latitude: report["lat"] as! CLLocationDegrees,
+                                                                     longitude: report["long"] as! CLLocationDegrees)
+                
+                var info = ""
+                if let description = report["description"] as? String {
+                    info = String(description.prefix(kMaxDescriptionLen))
+                    if description.count > kMaxDescriptionLen {
+                        info += "..."
+                    }
+                }
+                if let category = report["category"] as? String {
+                    info += ((info.count > 0) ? " " : "") + "(\(category))"
+                }
+                
+                reportAnnotation.title = info
+                
+                if let date = report["date"] as? Date {
+                    reportAnnotation.subtitle = dateFormatter.string(from: date)
+                }
+                
+                mapView.addAnnotation(reportAnnotation)
+            }            
+        }
     }
 }

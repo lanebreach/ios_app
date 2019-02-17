@@ -12,10 +12,25 @@ import MapKit
 import Mapbox
 import UIKit
 
+enum MockTestSetting {
+    case setMockReports
+    case useMockUpload
+    case showTwinPeaks
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
+    // all settings below should be set to false for the production release
+    class func getMockTestEnable(for setting: MockTestSetting) -> Bool {
+        switch setting {
+        case .setMockReports:   return false
+        case .useMockUpload:    return false
+        case .showTwinPeaks:    return false
+        }
+    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // credit: https://stackoverflow.com/questions/32111029/download-secure-file-from-s3-server-using-accesskey-and-secretkey
         let credentialsProvider = AWSStaticCredentialsProvider(accessKey: Keys.accessKey, secretKey: Keys.secretKey)
@@ -27,6 +42,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AWSS3TransferUtility.register(with: configurationUSWest1!, forKey: "USWest1S3TransferUtility")
         
         MGLAccountManager.accessToken = Keys.mapboxKey
+        
+        if AppDelegate.getMockTestEnable(for: .setMockReports) {
+            ReportManager.shared.setMockReports()
+        }
         
         return true
     }

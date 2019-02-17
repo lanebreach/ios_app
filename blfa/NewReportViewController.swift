@@ -7,7 +7,6 @@
 //
 
 import AVFoundation
-import AWSS3
 import CoreLocation
 import EasyTipView
 import JGProgressHUD
@@ -16,63 +15,6 @@ import ReactiveCocoa
 import ReactiveSwift
 import Result
 import UIKit
-
-enum PendingImageType {
-    case none
-    case libraryPhoto
-    case cameraPhoto
-}
-
-class NewReportViewModel {
-    static let defaultCategory: String = "Other"
-    
-    let emailAddress: MutableProperty<String>
-    let description: MutableProperty<String>
-    let category: MutableProperty<String>
-    let haveImage: MutableProperty<PendingImageType>
-    let currentLocation: MutableProperty<CLLocationCoordinate2D?>
-    
-    var categorySignal: Signal<String, NoError>
-    var descriptionSignal: Signal<String, NoError>
-    var okToSendSignal: Signal<Bool, NoError>
-    var locationStatusSignal: Signal<Bool, NoError>
-    
-    let categories: [String] = ["Private vehicle", "Delivery truck", "Moving truck", "FedEx", "UPS", "USPS", "Bus",
-                                "Uber", "Lyft", "Uber/Lyft",
-                                defaultCategory]    //  TODO/FUTURE - let user enter optional text to replace "other"?
-    
-    init(initialCategory: String) {
-        self.emailAddress = MutableProperty("")
-        self.description = MutableProperty("")
-        self.category = MutableProperty("")
-        self.haveImage = MutableProperty(.none)
-        self.currentLocation = MutableProperty(nil)
-        
-        self.categorySignal = self.category.signal
-        self.descriptionSignal = self.description.signal
-        
-        // output true if the email address has 3+ chars and we have a valid category/image/location
-        self.okToSendSignal = Signal.combineLatest(self.category.signal, self.haveImage.signal, self.currentLocation.signal)
-            .map { (arg) -> Bool in
-                
-                let (category, haveImage, currentLocation) = arg
-                
-                print("category=\(category), haveImage=\(haveImage), currentLocation=\(String(describing: currentLocation))")
-                return (category.count > 1) && (haveImage != .none) && (currentLocation != nil)
-        }
-        
-        self.locationStatusSignal = self.currentLocation.signal
-            .map { (currentLocation) -> Bool in
-                return currentLocation != nil
-        }
-        
-        DispatchQueue.main.async {
-            // set this after configuring categorySignal so that this gets tracked as a change
-            // do this async so that binding code executing immediately after we are constructed will complete first
-            self.category.value = initialCategory
-        }
-    }
-}
 
 class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
     AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate, EasyTipViewDelegate {
@@ -115,48 +57,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
              
                 self.gotoAppSettings()
             }
-        }
-    }
-
-    func uploadImage(with data: Data, filename: String, completion: @escaping (Error?) -> Void) {
-        let expression = AWSS3TransferUtilityUploadExpression()
-//        expression.progressBlock = progressBlock
-        
-        let completionHandler: AWSS3TransferUtilityUploadCompletionHandlerBlock = { (task, error) -> Void in
-            DispatchQueue.main.async(execute: {
-                if let error = error {
-                    print("completionHandler failed with error: \(error)")
-                    completion(error)
-                }
-//                else if (self.progressView.progress != 1.0) {
-//                    print("Error: Failed - Likely due to invalid region / filename")
-//                }
-                else {
-                    print("completionHandler success")
-                    completion(nil)
-                }
-            })
-        }
-
-        let transferUtility = AWSS3TransferUtility.s3TransferUtility(forKey: "USWest1S3TransferUtility")
-        transferUtility.uploadData(
-            data,
-            bucket: "lane-breach",
-            key: "311-sf/temp-images/\(filename).png",
-            contentType: "image/png",
-            expression: expression,
-            completionHandler: completionHandler).continueWith { (task) -> AnyObject? in
-                if let error = task.error {
-                    print("uploadData failed with error: \(error)")
-                    completion(error)
-                }
-                
-                if let _ = task.result {
-                    print("uploadData starting")
-                    // Do something with uploadTask.
-                }
-                
-                return nil;
         }
     }
     
@@ -214,6 +114,16 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 AppDelegate.showSimpleAlertWithOK(vc: self, "Please turn on location services to post a new report")
             }
         }
+    }
+    
+    // reset for the next submission
+    func resetReport() {
+        self.imageView.image = nil
+        self.viewModel.haveImage.value = .none
+        self.viewModel.category.value = NewReportViewModel.defaultCategory
+        self.viewModel.description.value = ""
+        
+        self.changePhotoAction(sender: nil)
     }
     
     //MARK:- Lifecycle
@@ -489,132 +399,71 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // TODO: probably move into model
         let filename = UUID().uuidString
         
-        hud = JGProgressHUD(style: .dark)
+        self.hud = JGProgressHUD(style: .dark)
         if let hud = hud {
-            hud.textLabel.text = "Uploading image"
             hud.show(in: self.view)
         }
 
         print("\(Date().timeIntervalSince1970) start image upload")
-        self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
-            print("\(Date().timeIntervalSince1970) start metadata upload")
-            guard error == nil else {
-                self.hud?.dismiss()
-                AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed with \(error!)")
-                return
-            }
-
-            // TODO - send the mediaUrl from uploadImage()
-            let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
-
-            // concatenate category (if not "Other") with optional description when POSTing (ex: [category] <description>)
-            var description: String = ((self.viewModel.category.value != NewReportViewModel.defaultCategory) && (self.viewModel.category.value.count != 0)) ?
-                "[\(self.viewModel.category.value)] " : ""
-            description.append(contentsOf: (self.viewModel.description.value.count) != 0 ? self.viewModel.description.value : "Blocked bicycle lane")
-
-            let parameters = [
-                "api_key": Keys.apiKey,
-                "service_code": "5a6b5ac2d0521c1134854b01",
-                "lat": String(currentLocation.latitude),
-                "long": String(currentLocation.longitude),
-                "email": (self.viewModel.emailAddress.value.count != 0) ? self.viewModel.emailAddress.value : "bikelanessf@gmail.com",
-                "media_url": mediaUrl,
-                "description": description,
-                "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
-            ]
-
-            // create the form URL-encoded string for the params
-            var postString: String = ""
-            var first = true
-            for (key, value) in parameters {
-                let escapedString = value.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-
-                if first {
-                    first = false
-                } else {
-                    postString += "&"
+  
+        NetworkManager.shared.uploadReport(image: image,
+                                           filename: filename,
+                                           currentLocation: currentLocation,
+                                           emailAddress: self.viewModel.emailAddress.value,
+                                           category: self.viewModel.category.value,
+                                           description: self.viewModel.description.value,
+                                           progressMessage: { (message) in
+                                            self.hud?.textLabel.text = message
+        }) { (serviceRequestId, token, error) in
+            self.hud?.dismiss()
+            if let error = error {
+                var gotTransientError = false
+                if let error = error as? NetworkManagerError {
+                    switch error.kind {
+                    case .imageUploadFailed:
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed. Please try again.")
+                        gotTransientError = true
+                    case .dataTaskNullData, .networkBadHTTPStatus:
+                        #if DEBUG
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with transient error: \(error)")
+                        #else
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed. Please try again.")
+                        #endif
+                        gotTransientError = true
+                    default:
+                        break
+                    }
                 }
-                postString += "\(key)=\(escapedString)"
-            }
-
-            // POST it
-            let url = URL(string: "http://mobile311-dev.sfgov.org/open311/v2/requests.json")!
-            var request = URLRequest(url: url)
-            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-            request.httpMethod = "POST"
-            request.httpBody = postString.data(using: .utf8)
-
-            self.hud?.textLabel.text = "Uploading details"
-            let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                DispatchQueue.main.async {
-                    guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                        print(error != nil ? "error=\(error!)" : "no data")
-
-                        self.hud?.dismiss()
-                        AppDelegate.showSimpleAlertWithOK(vc: self, error != nil ? "ERROR: \(error!)" : "ERROR: no data in server response")
-                        return
-                    }
-
-                    // check for 201 CREATED
-                    if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
-                        print("statusCode should be 201, but is \(httpStatus.statusCode)")
-                        print("response = \(httpStatus)")
-
-                        self.hud?.dismiss()
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: bad HTTP response code: \(httpStatus.statusCode)")
-                        return
-                    }
-
-                    self.hud?.dismiss()
-                    if let responseString = String(data: data, encoding: .utf8) {
-                        // looks like: responseString = [{"token":"5bc6c0f5ff031d6f5b335df0"}]
-                        print("responseString = \(responseString)")
-
-                        // check if it's a token
-                        let json = try? JSONSerialization.jsonObject(with: data, options: [])
-                        if let dictionary = json as? [[String: Any]] {
-                            if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
-                                print("serviceRequestId: \(serviceRequestId)")
-                                #if DEBUG
-                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
-                                #else
-                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
-                                #endif
-                            } else if let token = dictionary[0]["token"] as? String {
-                                // TODO - convert to service request ID
-                                #if DEBUG
-                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token)")
-                                #else
-                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
-                                #endif
-                            } else {
-                                #if DEBUG
-                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get a service request ID or token")
-                                #else
-                                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
-                                #endif
-                            }
-                        } else {
-                            #if DEBUG
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 but the response was malformed")
-                            #else
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
-                            #endif
-                        }
-                    }
+                
+                if !gotTransientError {
+                    #if DEBUG
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with error: \(error)")
+                    #else
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
+                    #endif
                     
-                    print("\(Date().timeIntervalSince1970) done metadata upload")
-
-                    // reset for the next submission
-                    self.imageView.image = nil
-                    self.viewModel.haveImage.value = .none
-                    self.viewModel.category.value = NewReportViewModel.defaultCategory
-                    self.viewModel.description.value = ""
-
-                    self.changePhotoAction(sender: nil)
+                    self.resetReport()
                 }
+            } else {
+                #if DEBUG
+                if let serviceRequestId = serviceRequestId {
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
+                } else {
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token ?? "(null)")")
+                }
+                #else
+                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
+                #endif
+                
+                ReportManager.shared.addReport(location: currentLocation,
+                                               description: self.viewModel.description.value,
+                                               category: self.viewModel.category.value,
+                                               serviceRequestId: serviceRequestId,
+                                               token: token,
+                                               httpPost: NetworkManager.shared.debugLastHttpPost)
+
+                self.resetReport()
             }
-            task.resume()
         }
     }
     
