@@ -10,6 +10,8 @@ import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var emailTextField: UITextField!
+    @IBOutlet weak var nameTextField: UITextField!
+    @IBOutlet weak var phoneTextField: UITextField!
     @IBOutlet weak var resetReportsLabel: UILabel!
     @IBOutlet weak var appVersionLabel: UILabel!
     
@@ -19,9 +21,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         tapper.numberOfTouchesRequired = 1
         resetReportsLabel.isUserInteractionEnabled = true
         resetReportsLabel.addGestureRecognizer(tapper)
-
-        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            appVersionLabel.text = "App Version \(appVersion)"
+        
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+            let appBundleVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+            
+            appVersionLabel.text = "App Version \(appVersion) (\(appBundleVersion))"
         } else {
             appVersionLabel.text = ""
         }
@@ -32,8 +36,14 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        self.emailTextField.text = UserDefaults.standard.string(forKey: "com.blfa.email") ?? ""
+        self.emailTextField.text = UserDefaults.standard.string(forKey: kUserDefaultsEmailKey)
         self.emailTextField.delegate = self
+        
+        self.nameTextField.text = UserDefaults.standard.string(forKey: kUserDefaultsNameKey)
+        self.nameTextField.delegate = self
+        
+        self.phoneTextField.text = UserDefaults.standard.string(forKey: kUserDefaultsPhoneKey)
+        self.phoneTextField.delegate = self
     }
     
     //MARK:- Internal methods
@@ -57,14 +67,25 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     //MARK:- UITextFieldDelegate
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        if let text = textField.text, text != "" {
-            if !isValidEmail(testStr: text) {
-                AppDelegate.showSimpleAlertWithOK(vc: self, "Invalid email address")
-                return true
+        
+        switch textField {
+        case emailTextField:
+            if let text = textField.text, text != "" {
+                if !isValidEmail(testStr: text) {
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "Invalid email address")
+                    return true
+                }
             }
+            
+            UserDefaults.standard.set(textField.text, forKey: kUserDefaultsEmailKey)
+        case nameTextField:
+            UserDefaults.standard.set(textField.text, forKey: kUserDefaultsNameKey)
+        case phoneTextField:
+            UserDefaults.standard.set(textField.text, forKey: kUserDefaultsPhoneKey)
+        default:
+            assert(false)
         }
         
-        UserDefaults.standard.set(textField.text, forKey: "com.blfa.email")
         return true
     }
 }

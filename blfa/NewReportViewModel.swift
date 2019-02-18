@@ -21,7 +21,9 @@ enum PendingImageType {
 class NewReportViewModel {
     static let defaultCategory: String = "Other"
     
-    let emailAddress: MutableProperty<String>
+    let emailAddress: MutableProperty<String?>
+    let fullName: MutableProperty<String?>
+    let phoneNumber: MutableProperty<String?>
     let description: MutableProperty<String>
     let category: MutableProperty<String>
     let haveImage: MutableProperty<PendingImageType>
@@ -37,7 +39,9 @@ class NewReportViewModel {
                                 defaultCategory]    //  TODO/FUTURE - let user enter optional text to replace "other"?
     
     init(initialCategory: String) {
-        self.emailAddress = MutableProperty("")
+        self.emailAddress = MutableProperty(nil)
+        self.fullName = MutableProperty(nil)
+        self.phoneNumber = MutableProperty(nil)
         self.description = MutableProperty("")
         self.category = MutableProperty("")
         self.haveImage = MutableProperty(.none)

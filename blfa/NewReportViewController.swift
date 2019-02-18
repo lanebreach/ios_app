@@ -192,8 +192,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         toolBar.isUserInteractionEnabled = true
         
         self.categoryTextField.inputAccessoryView = toolBar
-        NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
 
         // set up location icon/tap event handlers
         locationImageView.image = UIImage(named: "ic_location_bad_black")
@@ -254,11 +252,24 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         super.viewDidLoad()
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         // TODO - also make sure that this handles app foregrounding
         
-        // update the email addr
-        self.viewModel.emailAddress.value = UserDefaults.standard.string(forKey: "com.blfa.email") ?? ""
+        NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+
+        // update the email/name/phone
+        self.viewModel.emailAddress.value = UserDefaults.standard.string(forKey: kUserDefaultsEmailKey)
+        self.viewModel.fullName.value = UserDefaults.standard.string(forKey: kUserDefaultsNameKey)
+        self.viewModel.phoneNumber.value = UserDefaults.standard.string(forKey: kUserDefaultsPhoneKey)
         
         if !selectingLibraryPhoto && self.viewModel.haveImage.value != .libraryPhoto {
             // get a new location if we didn't return from selecting a library photo (and don't have a previously selected library photo)
@@ -438,6 +449,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                                            filename: filename,
                                            currentLocation: currentLocation,
                                            emailAddress: self.viewModel.emailAddress.value,
+                                           fullName: self.viewModel.fullName.value,
+                                           phoneNumber: self.viewModel.phoneNumber.value,
                                            category: self.viewModel.category.value,
                                            description: self.viewModel.description.value,
                                            progressMessage: { (message) in

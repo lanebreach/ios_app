@@ -12,6 +12,10 @@ import MapKit
 import Mapbox
 import UIKit
 
+let kUserDefaultsEmailKey = "com.blfa.email"
+let kUserDefaultsNameKey = "com.blfa.name"
+let kUserDefaultsPhoneKey = "com.blfa.phone"
+
 enum MockTestSetting {
     case setMockReports
     case useMockUpload

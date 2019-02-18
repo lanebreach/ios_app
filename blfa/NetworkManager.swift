@@ -171,7 +171,8 @@ class NetworkManager {
     }
     
     func uploadReport(image: UIImage, filename: String, currentLocation: CLLocationCoordinate2D,
-                      emailAddress: String, category: String, description: String,
+                      emailAddress: String?, fullName: String?, phoneNumber: String?,
+                      category: String, description: String,
                       progressMessage: @escaping (String) -> Void,
                       completion: @escaping (_ serviceRequestId: String?, _ token: String?, _ error: Error?) -> Void) {
         
@@ -196,16 +197,36 @@ class NetworkManager {
                 "[\(category)] " : ""
             fullDescription.append(contentsOf: (description.count) != 0 ? description : "Blocked bicycle lane")
             
-            let parameters = [
+            var parameters = [
                 "api_key": Keys.apiKey,
                 "service_code": "5a6b5ac2d0521c1134854b01",
                 "lat": String(currentLocation.latitude),
                 "long": String(currentLocation.longitude),
-                "email": (emailAddress.count != 0) ? emailAddress : "bikelanessf@gmail.com",
                 "media_url": mediaUrl,
                 "description": fullDescription,
                 "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
             ]
+            
+            if let emailAddress = emailAddress, emailAddress.trimmingCharacters(in: .whitespaces).count > 0 {
+                parameters["email"] = emailAddress.trimmingCharacters(in: .whitespaces)
+            } else {
+                parameters["email"] = "bikelanessf@gmail.com"
+            }
+            
+            if let fullName = fullName, fullName.trimmingCharacters(in: .whitespaces).count > 0 {
+                var components = fullName.components(separatedBy: " ")
+                if components.count > 0 {
+                    parameters["first_name"] = components.removeFirst()
+                    parameters["last_name"] = components.joined(separator: " ").trimmingCharacters(in: .whitespaces)
+                } else {
+                    parameters["first_name"] = fullName
+                    parameters["last_name"] = ""
+                }
+            }
+
+            if let phoneNumber = phoneNumber, phoneNumber.trimmingCharacters(in: .whitespaces).count > 0 {
+                parameters["phone"] = phoneNumber.trimmingCharacters(in: .whitespaces)
+            }
             
             // create the form URL-encoded string for the params
             var postString: String = ""
