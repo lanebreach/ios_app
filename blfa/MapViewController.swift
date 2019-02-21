@@ -13,6 +13,7 @@ import MapKit
 import Mapbox
 
 class MapViewController: UIViewController, MGLMapViewDelegate {
+    @IBOutlet weak var mapLegendView: UIView!
     var mapView: MGLMapView?
     var hud: JGProgressHUD?
     var mapLoaded = false
@@ -22,7 +23,7 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let url = URL(string: "mapbox://styles/agaesser/cjn5lb26b0gty2rnr3laj0ljd")
+        let url = URL(string: "mapbox://styles/agaesser/cjse25orf1sqx1fl1tq1zrrh9")
         mapView = MGLMapView(frame: view.bounds, styleURL: url)
         guard let mapView = mapView else {
             return
@@ -122,6 +123,9 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
         if viewVisible {
             addReportAnnotations()
         }
+        
+        mapLegendView.layer.cornerRadius = 8
+        view.bringSubview(toFront: mapLegendView)
     }
     
     func mapView(_ mapView: MGLMapView, annotationCanShowCallout annotation: MGLAnnotation) -> Bool {

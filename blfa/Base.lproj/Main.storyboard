@@ -17,14 +17,68 @@
                     <view key="view" contentMode="scaleToFill" id="tsR-hK-woN">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iA8-lT-XKI">
+                                <rect key="frame" x="16" y="20" width="343" height="48"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="map_lane_icon" translatesAutoresizingMaskIntoConstraints="NO" id="L5x-kg-0AO">
+                                        <rect key="frame" x="8" y="8" width="32" height="32"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="32" id="RTM-Me-gSm"/>
+                                            <constraint firstAttribute="width" constant="32" id="vYQ-CZ-XLi"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Bike lane" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GMH-G4-ebc">
+                                        <rect key="frame" x="48" y="15" width="68.5" height="18"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="map_blockage_icon" translatesAutoresizingMaskIntoConstraints="NO" id="AeM-NR-NtE">
+                                        <rect key="frame" x="128" y="8" width="32" height="32"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="32" id="EDu-Y6-3Y8"/>
+                                            <constraint firstAttribute="width" constant="32" id="UuN-Ft-22Q"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Lane blockages" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OkR-He-WXo">
+                                        <rect key="frame" x="168" y="15" width="287" height="18"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                        <color key="textColor" cocoaTouchSystemColor="lightTextColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="0.5" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="OkR-He-WXo" firstAttribute="centerY" secondItem="AeM-NR-NtE" secondAttribute="centerY" id="6O4-ff-joL"/>
+                                    <constraint firstItem="OkR-He-WXo" firstAttribute="leading" secondItem="AeM-NR-NtE" secondAttribute="trailing" constant="8" id="Do9-tM-GVP"/>
+                                    <constraint firstItem="AeM-NR-NtE" firstAttribute="leading" secondItem="GMH-G4-ebc" secondAttribute="trailing" constant="11.5" id="NMy-ay-Zxr"/>
+                                    <constraint firstItem="L5x-kg-0AO" firstAttribute="top" secondItem="iA8-lT-XKI" secondAttribute="top" constant="8" id="UNv-gy-O3c"/>
+                                    <constraint firstAttribute="trailing" secondItem="OkR-He-WXo" secondAttribute="trailing" constant="8" id="a9r-Ne-A0I"/>
+                                    <constraint firstItem="GMH-G4-ebc" firstAttribute="centerY" secondItem="L5x-kg-0AO" secondAttribute="centerY" id="dho-NK-iaA"/>
+                                    <constraint firstAttribute="bottom" secondItem="AeM-NR-NtE" secondAttribute="bottom" constant="8" id="eX8-eT-qgt"/>
+                                    <constraint firstItem="AeM-NR-NtE" firstAttribute="centerY" secondItem="GMH-G4-ebc" secondAttribute="centerY" id="gY4-Qz-cwP"/>
+                                    <constraint firstItem="L5x-kg-0AO" firstAttribute="leading" secondItem="iA8-lT-XKI" secondAttribute="leading" constant="8" id="ti0-bj-AFq"/>
+                                    <constraint firstItem="GMH-G4-ebc" firstAttribute="leading" secondItem="L5x-kg-0AO" secondAttribute="trailing" constant="8" id="ufe-Xn-b3f"/>
+                                </constraints>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="iA8-lT-XKI" firstAttribute="top" secondItem="PQr-Ze-W5v" secondAttribute="top" id="MAc-5p-N0Y"/>
+                            <constraint firstItem="iA8-lT-XKI" firstAttribute="leading" secondItem="PQr-Ze-W5v" secondAttribute="leading" constant="16" id="NVb-Fr-fAA"/>
+                            <constraint firstItem="PQr-Ze-W5v" firstAttribute="trailing" secondItem="iA8-lT-XKI" secondAttribute="trailing" constant="16" id="pn0-16-qiS"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="PQr-Ze-W5v"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Reports" image="map_icon" id="acW-dT-cKf"/>
+                    <connections>
+                        <outlet property="mapLegendView" destination="iA8-lT-XKI" id="ShV-fv-ygW"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="W5J-7L-Pyd" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="749.60000000000002" y="-320.68965517241384"/>
+            <point key="canvasLocation" x="991" y="-472"/>
         </scene>
         <!--New Report-->
         <scene sceneID="wg7-f3-ORb">
@@ -408,7 +462,9 @@
         <image name="ic_flash_auto_black" width="48" height="48"/>
         <image name="ic_location_black" width="48" height="48"/>
         <image name="library_icon" width="48" height="48"/>
+        <image name="map_blockage_icon" width="32" height="32"/>
         <image name="map_icon" width="23" height="24"/>
+        <image name="map_lane_icon" width="32" height="32"/>
         <image name="no_bike_icon" width="25" height="25"/>
     </resources>
 </document>
