@@ -41,7 +41,8 @@ public struct NetworkManagerError: LocalizedError {
 }
 
 class NetworkManager {
-    let baseDomain = "mobile311-dev.sfgov.org"
+    let baseDomainDevelopment = "mobile311-dev.sfgov.org"
+    let baseDomainProduction = "mobile311.sfgov.org"
     var mockUploadReportCount = -1
 
     static let shared = NetworkManager()
@@ -98,6 +99,7 @@ class NetworkManager {
     func getServiceRequestId(from token: String, completion: @escaping (String?, Error?) -> Void) {
         // now do a GET to translate the token into a service_request_id
         // ex: http://mobile311-dev.sfgov.org/open311/v2/tokens/5bc6c0f5ff031d6f5b335df0.json
+        let baseDomain = UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? baseDomainDevelopment : baseDomainProduction;
         let url = URL(string: "http://\(baseDomain)/open311/v2/tokens/\(token).json")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -250,7 +252,8 @@ class NetworkManager {
             self.debugLastHttpPost = postString
             
             // POST it
-            let url = URL(string: "http://\(self.baseDomain)/open311/v2/requests.json")!
+            let baseDomain = UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? self.baseDomainDevelopment : self.baseDomainProduction;
+            let url = URL(string: "http://\(baseDomain)/open311/v2/requests.json")!
             var request = URLRequest(url: url)
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             request.httpMethod = "POST"
