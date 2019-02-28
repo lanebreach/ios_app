@@ -143,6 +143,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     //MARK:- Lifecycle
     override func viewDidLoad() {
+        // this is the first screen that is shown, so let's update the tab bar style here
+        NetworkManager.shared.updateTabBarStyleForCurrentServer(vc: self)
+        
         // ask the user to access the photo library so we can get the location from photos
         if PHPhotoLibrary.authorizationStatus() != PHAuthorizationStatus.authorized {
             PHPhotoLibrary.requestAuthorization(requestAuthorizationHandler)

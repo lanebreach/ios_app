@@ -46,6 +46,12 @@ class NetworkManager {
 
     static let shared = NetworkManager()
     var debugLastHttpPost: String?
+    
+    func updateTabBarStyleForCurrentServer(vc: UIViewController) {
+        vc.tabBarController?.tabBar.barTintColor = UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? UIColor.red : UIColor.lightGray
+        vc.tabBarController?.tabBar.unselectedItemTintColor = UIColor.black
+        vc.tabBarController?.tabBar.tintColor = UIColor.blue
+    }
 
     private func uploadImage(with data: Data, filename: String, completion: @escaping (Error?) -> Void) {
         let expression = AWSS3TransferUtilityUploadExpression()
@@ -198,7 +204,7 @@ class NetworkManager {
             fullDescription.append(contentsOf: (description.count) != 0 ? description : "Blocked bicycle lane")
             
             var parameters = [
-                "api_key": Keys.apiKey,
+                "api_key": UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? Keys.apiKey : Keys.apiKeyProduction,
                 "service_code": "5a6b5ac2d0521c1134854b01",
                 "lat": String(currentLocation.latitude),
                 "long": String(currentLocation.longitude),

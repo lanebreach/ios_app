@@ -15,6 +15,7 @@ import UIKit
 let kUserDefaultsEmailKey = "com.blfa.email"
 let kUserDefaultsNameKey = "com.blfa.name"
 let kUserDefaultsPhoneKey = "com.blfa.phone"
+let kUserDefaultsUsingDevServerKey = "com.blfa.use-dev-server-key"
 
 enum MockTestSetting {
     case setMockReports

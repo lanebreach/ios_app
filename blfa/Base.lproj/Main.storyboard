@@ -399,13 +399,22 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V40-sU-3Z4">
+                                <rect key="frame" x="343" y="586" width="32" height="32"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="32" id="BXf-oX-Fd3"/>
+                                    <constraint firstAttribute="width" constant="32" id="D8r-KB-Xo5"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="8Eu-0z-CDl" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="0tt-4e-gTo"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="bottom" secondItem="V40-sU-3Z4" secondAttribute="bottom" id="4F2-ml-88f"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="faP-Fl-ur2" secondAttribute="trailing" constant="16" id="6cB-JR-023"/>
                             <constraint firstItem="1iN-j6-ZhF" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="A3e-VM-X1e"/>
                             <constraint firstItem="1iN-j6-ZhF" firstAttribute="top" secondItem="9WT-HN-TWF" secondAttribute="bottom" constant="8" id="DSV-1A-5vh"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="V40-sU-3Z4" secondAttribute="trailing" id="EQ8-EC-nZh"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="width" secondItem="v6B-Zl-xuk" secondAttribute="width" id="JzW-Gs-q9k"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="bottom" secondItem="8Eu-0z-CDl" secondAttribute="bottom" constant="11" id="Ok7-Up-WOa"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="Qjf-1Q-fm8"/>
@@ -425,6 +434,7 @@
                     <tabBarItem key="tabBarItem" title="Settings" image="gear_icon" id="nXh-ws-IVk"/>
                     <connections>
                         <outlet property="appVersionLabel" destination="8Eu-0z-CDl" id="8jX-Di-FHL"/>
+                        <outlet property="changeServerHiddenView" destination="V40-sU-3Z4" id="Cqv-20-DIr"/>
                         <outlet property="emailTextField" destination="lCx-JU-5yJ" id="B22-Xd-6qd"/>
                         <outlet property="nameTextField" destination="86Q-Jd-PgA" id="X3p-uh-l3u"/>
                         <outlet property="phoneTextField" destination="fMN-ni-pfm" id="JCn-Ck-aCW"/>

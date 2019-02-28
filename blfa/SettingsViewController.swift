@@ -14,14 +14,20 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var phoneTextField: UITextField!
     @IBOutlet weak var resetReportsLabel: UILabel!
     @IBOutlet weak var appVersionLabel: UILabel!
+    @IBOutlet weak var changeServerHiddenView: UIView!
     
     //MARK:- Lifecycle
     override func viewDidLoad() {
-        let tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetReportsButtonPressed(sender:)))
+        var tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetReportsAction(sender:)))
         tapper.numberOfTouchesRequired = 1
         resetReportsLabel.isUserInteractionEnabled = true
         resetReportsLabel.addGestureRecognizer(tapper)
-        
+
+        tapper = UITapGestureRecognizer(target:self, action:#selector(self.changeServerAction(sender:)))
+        tapper.numberOfTouchesRequired = 1
+        changeServerHiddenView.isUserInteractionEnabled = true
+        changeServerHiddenView.addGestureRecognizer(tapper)
+
         if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             let appBundleVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
             
@@ -55,13 +61,46 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     }
     
     //MARK:- Event Handlers
-    @objc func resetReportsButtonPressed(sender: UITapGestureRecognizer?) {
+    @objc func resetReportsAction(sender: UITapGestureRecognizer?) {
         AppDelegate.showSimpleAlertWithOK(vc: self, "Touch Reset to clear your list of previously uploaded reports from the Reports screen. This does not affect reports uploaded to 311.",
                                           button2title: "Reset") { (_) in
 
                                             ReportManager.shared.clearReports()
                                             AppDelegate.showSimpleAlertWithOK(vc: self, "All reports removed from the map")
         }
+    }
+    
+    @objc func changeServerAction(sender: UIView) {
+        let alertController = UIAlertController(title: nil, message: "Change server?", preferredStyle: .alert)
+        alertController.addTextField { textField in
+            textField.placeholder = "Password"
+            textField.isSecureTextEntry = true
+        }
+        
+        let productionAction = UIAlertAction(title: "311 Prod", style: .default) { [weak alertController] _ in
+            guard let alertController = alertController, let textField = alertController.textFields?.first else { return }
+            if let password = textField.text, password == Keys.apiServerPassword {
+                AppDelegate.showSimpleAlertWithOK(vc: self, "Server changed to 311 production")
+                UserDefaults.standard.set(false, forKey: kUserDefaultsUsingDevServerKey)
+                NetworkManager.shared.updateTabBarStyleForCurrentServer(vc: self)
+            }
+        }
+        alertController.addAction(productionAction)
+
+        let devAction = UIAlertAction(title: "311 Dev", style: .default) { [weak alertController] _ in
+            guard let alertController = alertController, let textField = alertController.textFields?.first else { return }
+            if let password = textField.text, password == Keys.apiServerPassword {
+                AppDelegate.showSimpleAlertWithOK(vc: self, "Server changed to 311 development")
+                UserDefaults.standard.set(true, forKey: kUserDefaultsUsingDevServerKey)
+                NetworkManager.shared.updateTabBarStyleForCurrentServer(vc: self)
+            }
+        }
+        alertController.addAction(devAction)
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     //MARK:- UITextFieldDelegate
