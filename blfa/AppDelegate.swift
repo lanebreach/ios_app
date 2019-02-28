@@ -16,6 +16,15 @@ let kUserDefaultsEmailKey = "com.blfa.email"
 let kUserDefaultsNameKey = "com.blfa.name"
 let kUserDefaultsPhoneKey = "com.blfa.phone"
 let kUserDefaultsUsingDevServerKey = "com.blfa.use-dev-server-key"
+let kUserDefaultsHideTipNewReportMain = "com.blfa.hide-tip-newreport-main"
+let kUserDefaultsHideTipNewReportLocation = "com.blfa.hide-tip-newreport-location"
+let kUserDefaultsHideTipNewReportFlash = "com.blfa.hide-tip-newreport-flash"
+
+enum TipIdentifier: Int {
+    case newReportMain = 1
+    case newReportLocation
+    case newReportFlash
+}
 
 enum MockTestSetting {
     case setMockReports
@@ -26,15 +35,6 @@ enum MockTestSetting {
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-
-    // all settings below should be set to false for the production release
-    class func getMockTestEnable(for setting: MockTestSetting) -> Bool {
-        switch setting {
-        case .setMockReports:   return false
-        case .useMockUpload:    return false
-        case .showTwinPeaks:    return false
-        }
-    }
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // credit: https://stackoverflow.com/questions/32111029/download-secure-file-from-s3-server-using-accesskey-and-secretkey
@@ -51,6 +51,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if AppDelegate.getMockTestEnable(for: .setMockReports) {
             ReportManager.shared.setMockReports()
         }
+        
+        print("Using dev server: \(UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey))")
         
         return true
     }
@@ -77,6 +79,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
     
+    // all settings below should be set to false for the production release
+    class func getMockTestEnable(for setting: MockTestSetting) -> Bool {
+        switch setting {
+        case .setMockReports:   return false
+        case .useMockUpload:    return false
+        case .showTwinPeaks:    return false
+        }
+    }
+
+    // helper function to show an alert with optional actions
     class func showSimpleAlertWithOK(vc: UIViewController, _ message: String, button2title: String? = nil,
         button2handler: ((UIAlertAction) -> Void)? = nil) {
         
@@ -99,5 +111,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
+    
+    class func shouldShowTip(id: TipIdentifier) -> Bool {
+        switch id {
+        case .newReportMain:
+            return !UserDefaults.standard.bool(forKey: kUserDefaultsHideTipNewReportMain)
+        case .newReportLocation:
+            return !UserDefaults.standard.bool(forKey: kUserDefaultsHideTipNewReportLocation)
+        case .newReportFlash:
+            return !UserDefaults.standard.bool(forKey: kUserDefaultsHideTipNewReportFlash)
+        }
+    }
+    
+    class func hideTip(id: TipIdentifier) {
+        switch id {
+        case .newReportMain:
+            UserDefaults.standard.set(true, forKey: kUserDefaultsHideTipNewReportMain)
+        case .newReportLocation:
+            UserDefaults.standard.set(true, forKey: kUserDefaultsHideTipNewReportLocation)
+        case .newReportFlash:
+            UserDefaults.standard.set(true, forKey: kUserDefaultsHideTipNewReportFlash)
+        }
+    }
+    
+    class func restoreAllTips() {
+        UserDefaults.standard.set(false, forKey: kUserDefaultsHideTipNewReportMain)
+        UserDefaults.standard.set(false, forKey: kUserDefaultsHideTipNewReportLocation)
+        UserDefaults.standard.set(false, forKey: kUserDefaultsHideTipNewReportFlash)
+    }
 }
-

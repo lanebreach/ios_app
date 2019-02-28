@@ -35,7 +35,7 @@ class NewReportViewModel {
     var locationStatusSignal: Signal<Bool, NoError>
     
     let categories: [String] = ["Private vehicle", "Delivery truck", "Moving truck", "FedEx", "UPS", "USPS", "Bus",
-                                "Uber", "Lyft", "Uber/Lyft",
+                                "Commuter Shuttle", "Uber", "Lyft", "Uber/Lyft",
                                 defaultCategory]    //  TODO/FUTURE - let user enter optional text to replace "other"?
     
     init(initialCategory: String) {

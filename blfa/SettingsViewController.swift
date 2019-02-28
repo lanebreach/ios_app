@@ -13,6 +13,7 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var phoneTextField: UITextField!
     @IBOutlet weak var resetReportsLabel: UILabel!
+    @IBOutlet weak var resetTipsLabel: UILabel!
     @IBOutlet weak var appVersionLabel: UILabel!
     @IBOutlet weak var changeServerHiddenView: UIView!
     
@@ -22,6 +23,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         tapper.numberOfTouchesRequired = 1
         resetReportsLabel.isUserInteractionEnabled = true
         resetReportsLabel.addGestureRecognizer(tapper)
+        
+        tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetTipsAction(sender:)))
+        tapper.numberOfTouchesRequired = 1
+        resetTipsLabel.isUserInteractionEnabled = true
+        resetTipsLabel.addGestureRecognizer(tapper)
 
         tapper = UITapGestureRecognizer(target:self, action:#selector(self.changeServerAction(sender:)))
         tapper.numberOfTouchesRequired = 1
@@ -70,7 +76,13 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         }
     }
     
-    @objc func changeServerAction(sender: UIView) {
+    @objc func resetTipsAction(sender: UITapGestureRecognizer?) {
+        AppDelegate.restoreAllTips()
+        
+        AppDelegate.showSimpleAlertWithOK(vc: self, "All hints restored")
+    }
+    
+    @objc func changeServerAction(sender: UITapGestureRecognizer?) {
         let alertController = UIAlertController(title: nil, message: "Change server?", preferredStyle: .alert)
         alertController.addTextField { textField in
             textField.placeholder = "Password"

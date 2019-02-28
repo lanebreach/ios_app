@@ -45,8 +45,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
-    var firstView: Bool = true
-    var tipViews: [EasyTipView] = []
+    var tipViews: [TipIdentifier:EasyTipView] = [:]
     var selectingLibraryPhoto = false
     
     //MARK:- Internal methods
@@ -283,27 +282,37 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // for next time
         selectingLibraryPhoto = false
-        
-        if firstView {
-            var tipView = EasyTipView(text: "Welcome to Lane Breach!\n\nUse these buttons to take a picture of a bike lane blockage or to select an existing photo",
-                                      preferences: tipViewPreferences(),
-                                      delegate: self)
-            tipView.show(forView: cameraButtonsView, withinSuperview: self.view)
-            tipViews.append(tipView)
-            
-            tipView = EasyTipView(text: "This icon lets you know if the app has found your location",
+
+        // add tips, if any
+        var tipView: EasyTipView
+        if tipViews[.newReportMain] == nil && AppDelegate.shouldShowTip(id: .newReportMain) {
+            tipView = EasyTipView(text: "Welcome to Lane Breach!\n\nUse these buttons to take a picture of a bike lane blockage or to select an existing photo",
                                   preferences: tipViewPreferences(),
                                   delegate: self)
-            tipView.show(forView: locationImageView, withinSuperview: self.view)
-            tipViews.append(tipView)
-
-            tipView = EasyTipView(text: "Touch this icon to change the camera's flash mode",
-                                  preferences: tipViewPreferences(verticalOffset: 100),
+            tipView.tag = TipIdentifier.newReportMain.rawValue
+            print("adding tipview \(tipView.tag)")
+            tipView.show(forView: cameraButtonsView, withinSuperview: self.view)
+            tipViews[.newReportMain] = tipView
+        }
+        
+        if tipViews[.newReportLocation] == nil && AppDelegate.shouldShowTip(id: .newReportLocation) {
+            tipView = EasyTipView(text: "This icon lets you know if the app has found your location",
+                                  preferences: tipViewPreferences(arrowPosition: .top),
                                   delegate: self)
+            tipView.tag = TipIdentifier.newReportLocation.rawValue
+            print("adding tipview \(tipView.tag)")
+            tipView.show(forView: locationImageView, withinSuperview: self.view)
+            tipViews[.newReportLocation] = tipView
+        }
+        
+        if tipViews[.newReportFlash] == nil && AppDelegate.shouldShowTip(id: .newReportFlash) {
+            tipView = EasyTipView(text: "Touch this icon to change the camera's flash mode",
+                                  preferences: tipViewPreferences(verticalOffset: 100, arrowPosition: .top),
+                                  delegate: self)
+            tipView.tag = TipIdentifier.newReportFlash.rawValue
+            print("adding tipview \(tipView.tag)")
             tipView.show(forView: flashImageView, withinSuperview: self.view)
-            tipViews.append(tipView)
-
-            firstView = false
+            tipViews[.newReportFlash] = tipView
         }
     }
     
@@ -332,7 +341,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     @IBAction func takePicureAction(sender: UIButton) {
         for tipview in tipViews {
-            tipview.dismiss()
+            tipview.value.dismiss()
         }
         
         // Make sure capturePhotoOutput is valid
@@ -355,7 +364,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     @IBAction func photoLibraryAction(sender: UIButton) {
         for tipview in tipViews {
-            tipview.dismiss()
+            tipview.value.dismiss()
         }
 
         let vc = UIImagePickerController()
@@ -680,7 +689,12 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     //MARK:- EasyTipViewDelegate
     func easyTipViewDidDismiss(_ tipView : EasyTipView) {
-        
+        if let tipId = TipIdentifier(rawValue: tipView.tag) {
+            AppDelegate.hideTip(id: tipId)
+            
+            tipViews.removeValue(forKey: tipId)
+            print("tipViews.count: \(tipViews.count)")
+        }
     }
 }
 
