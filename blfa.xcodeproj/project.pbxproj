@@ -120,6 +120,7 @@
 				6895E9E12165B9FD00FD02DA /* Frameworks */,
 				6895E9E22165B9FD00FD02DA /* Resources */,
 				1487B8E54D2244AFDAB53B43 /* [CP] Embed Pods Frameworks */,
+				68E37F3C222CBD04003D8461 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -221,6 +222,24 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-blfa/Pods-blfa-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		68E37F3C222CBD04003D8461 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Fabric/run\" 30b494e8501891ad150e9384ef112a0c4f476ee7 7ce9629d373f53818314082e224045a6c8895bb496e8f1f16f298385732a6894\n";
 		};
 		C0A21BF9EBD3960C1280C647 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -404,6 +423,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 68Y24PR355;
 				INFOPLIST_FILE = blfa/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;

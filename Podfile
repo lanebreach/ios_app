@@ -13,4 +13,6 @@ target 'blfa' do
   pod 'Mapbox-iOS-SDK', '~> 4.6'
   pod 'JGProgressHUD'
   pod 'EasyTipView', '~> 2.0.0'
+  pod 'Fabric'
+  pod 'Crashlytics'
 end

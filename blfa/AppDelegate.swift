@@ -8,6 +8,8 @@
 
 import AWSDynamoDB
 import AWSS3
+import Fabric
+import Crashlytics
 import MapKit
 import Mapbox
 import UIKit
@@ -37,6 +39,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        Fabric.with([Crashlytics.self])
+        
         // credit: https://stackoverflow.com/questions/32111029/download-secure-file-from-s3-server-using-accesskey-and-secretkey
         let credentialsProvider = AWSStaticCredentialsProvider(accessKey: Keys.accessKey, secretKey: Keys.secretKey)
         let configuration = AWSServiceConfiguration(region: .USWest2, credentialsProvider: credentialsProvider)

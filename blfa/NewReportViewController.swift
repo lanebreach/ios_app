@@ -470,6 +470,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }) { (serviceRequestId, token, error) in
             self.hud?.dismiss()
             
+            // TODO - need more messages for errors (try to handle dupe HTTP code - 409? 422?, if any)
+            // also NSLog the error
+            // add beginbackgroundtask to better support backgrounding while uploading
+            // once picture is captured, don't update location if we already have one
+            // try to repro the upload error using dev server and background while uploading
             var addAndResetReport = false
             if let error = error {
                 var gotTransientError = false

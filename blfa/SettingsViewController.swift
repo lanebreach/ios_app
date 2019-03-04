@@ -6,6 +6,8 @@
 //  Copyright © 2018 Dale Low. All rights reserved.
 //
 
+import Fabric
+import Crashlytics
 import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate {
@@ -19,6 +21,15 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     
     //MARK:- Lifecycle
     override func viewDidLoad() {
+        #if false
+        // crash tester
+        let button = UIButton(type: .roundedRect)
+        button.frame = CGRect(x: 20, y: 50, width: 100, height: 30)
+        button.setTitle("Crash", for: [])
+        button.addTarget(self, action: #selector(self.crashButtonTapped(_:)), for: .touchUpInside)
+        view.addSubview(button)
+        #endif
+
         var tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetReportsAction(sender:)))
         tapper.numberOfTouchesRequired = 1
         resetReportsLabel.isUserInteractionEnabled = true
@@ -67,6 +78,12 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     }
     
     //MARK:- Event Handlers
+    #if false
+    @objc func crashButtonTapped(_ sender: AnyObject) {
+        Crashlytics.sharedInstance().crash()
+    }
+    #endif
+
     @objc func resetReportsAction(sender: UITapGestureRecognizer?) {
         AppDelegate.showSimpleAlertWithOK(vc: self, "Touch Reset to clear your list of previously uploaded reports from the Reports screen. This does not affect reports uploaded to 311.",
                                           button2title: "Reset") { (_) in
