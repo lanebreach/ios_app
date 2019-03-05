@@ -6,8 +6,8 @@
 //  Copyright © 2018 Dale Low. All rights reserved.
 //
 
-import Fabric
 import Crashlytics
+import Fabric
 import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate {

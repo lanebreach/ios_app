@@ -7,8 +7,10 @@
 //
 
 import AVFoundation
+import Crashlytics
 import CoreLocation
 import EasyTipView
+import Fabric
 import JGProgressHUD
 import Photos
 import ReactiveCocoa
@@ -20,6 +22,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate, EasyTipViewDelegate {
 
     let controlViewToSafeAreaBottomDefault: CGFloat = 16
+    #if DEBUG
+    let showDebugMessages = true
+    #else
+    let showDebugMessages = false
+    #endif
 
     @IBOutlet weak var locationImageView: UIImageView!
     @IBOutlet weak var flashImageView: UIImageView!
@@ -47,6 +54,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var hud: JGProgressHUD?
     var tipViews: [TipIdentifier:EasyTipView] = [:]
     var selectingLibraryPhoto = false
+    var uploadAttempts = 0
     
     //MARK:- Internal methods
     func requestAuthorizationHandler(status: PHAuthorizationStatus) {
@@ -234,18 +242,21 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                         captureSession!.addOutput(capturePhotoOutput)
                         captureSession!.startRunning()
                     } else {
-                        #if DEBUG
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: AVCapturePhotoOutput() failed")
-                        #else
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
-                        #endif
+                        if showDebugMessages {
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: AVCapturePhotoOutput() failed")
+                        } else {
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
+                        }
+                        Crashlytics.sharedInstance().recordError(NSError(domain: "AVCapturePhotoOutput error", code: 0, userInfo: nil))
                     }
                 } catch {
-                    #if DEBUG
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: capture setup error: \(error)")
-                    #else
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
-                    #endif
+                    if showDebugMessages {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: capture setup error: \(error)")
+                    } else {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
+                    }
+                    Crashlytics.sharedInstance().recordError(NSError(domain: "AVCaptureDeviceInput error", code: 0,
+                                                                     userInfo: ["error": error.localizedDescription]))
                 }
             }
         
@@ -457,6 +468,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
 
         print("\(Date().timeIntervalSince1970) start image upload")
   
+        uploadAttempts += 1
         NetworkManager.shared.uploadReport(image: image,
                                            filename: filename,
                                            currentLocation: currentLocation,
@@ -470,50 +482,59 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }) { (serviceRequestId, token, error) in
             self.hud?.dismiss()
             
-            // TODO - need more messages for errors (try to handle dupe HTTP code - 409? 422?, if any)
-            // also NSLog the error
-            // add beginbackgroundtask to better support backgrounding while uploading
-            // once picture is captured, don't update location if we already have one
-            // try to repro the upload error using dev server and background while uploading
             var addAndResetReport = false
             if let error = error {
+                // report to crashlytics as non-fatal error
+                Crashlytics.sharedInstance().recordError(error)
+                
                 var gotTransientError = false
-                if let error = error as? NetworkManagerError {
-                    switch error.kind {
-                    case .imageUploadFailed:
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed. Please try again.")
-                        gotTransientError = true
-                    case .dataTaskNullData, .networkBadHTTPStatus:
-                        #if DEBUG
+                switch error.kind {
+                case .imageUploadFailed:
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed. Please try again.")
+                    gotTransientError = true
+                case .dataTaskNullData, .networkBadHTTPStatus:
+                    if self.showDebugMessages {
                         AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with transient error: \(error)")
-                        #else
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed. Please try again.")
-                        #endif
-                        gotTransientError = true
-                    default:
-                        break
+                    } else {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed (code \(error.code)). Please try again.")
                     }
+                    gotTransientError = true
+                default:
+                    break
                 }
                 
                 if !gotTransientError {
-                    #if DEBUG
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with error: \(error)")
-                    #else
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back. Hopefully it worked!")
-                    #endif
+                    if self.showDebugMessages {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with permanent error: \(error)")
+                    } else {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311, but we didn't get the right confirmation back (code \(error.code)). Hopefully it worked!")
+                    }
                     
                     addAndResetReport = true
                 }
             } else {
-                #if DEBUG
-                if let serviceRequestId = serviceRequestId {
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
+                var errorDomain: String
+                if AppDelegate.getMockTestEnable(for: .useMockUpload) {
+                    errorDomain = "MockNetworkManagerSuccess"
+                } else if UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) {
+                    errorDomain = "DevNetworkManagerSuccess"
                 } else {
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token ?? "(null)")")
+                    errorDomain = "NetworkManagerSuccess"
                 }
-                #else
-                AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
-                #endif
+                
+                // report successful upload to crashlytics as non-fatal error
+                Crashlytics.sharedInstance().recordError(NSError(domain: errorDomain, code: 0,
+                                                                 userInfo: ["uploadAttempts": self.uploadAttempts]))
+                
+                if self.showDebugMessages {
+                    if let serviceRequestId = serviceRequestId {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
+                    } else {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with token \(token ?? "(null)")")
+                    }
+                } else {
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
+                }
                 
                 addAndResetReport = true
             }
@@ -558,21 +579,25 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         // Make sure we get some photo sample buffer
         guard error == nil else {
-            #if DEBUG
-            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed, error: \(String(describing: error))")
-            #else
-            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed")
-            #endif
+            if showDebugMessages {
+                AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed, error: \(error!)")
+            } else {
+                AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed")
+            }
+            
+            Crashlytics.sharedInstance().recordError(NSError(domain: "didFinishProcessingPhoto error", code: 0,
+                                                             userInfo: ["error": error!.localizedDescription]))
             return
         }
         
         // Convert photo same buffer to a jpeg image data
         guard let imageData = photo.fileDataRepresentation() else {
-            #if DEBUG
-            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: fileDataRepresentation() failed")
-            #else
-            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed")
-            #endif
+            if showDebugMessages {
+                AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: fileDataRepresentation() failed")
+            } else {
+                AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: photo capture failed")
+            }
+            Crashlytics.sharedInstance().recordError(NSError(domain: "fileDataRepresentation error", code: 0, userInfo: nil))
             return
         }
 
@@ -583,6 +608,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             let fixedImage = fixOrientation(img: capturedImage) else {
                 
                 AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (failed to fix orientation)")
+                Crashlytics.sharedInstance().recordError(NSError(domain: "fixOrientation error", code: 0, userInfo: nil))
                 return
         }
         
@@ -600,6 +626,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // tell the model that we have an image
         self.viewModel.haveImage.value = .cameraPhoto
+        uploadAttempts = 0
     }
     
     //MARK:- UIImagePickerControllerDelegate methods
@@ -609,11 +636,13 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // note: could use UIImagePickerControllerEditedImage if allowsEditing == true
         guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
             AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (no original image)")
+            Crashlytics.sharedInstance().recordError(NSError(domain: "UIImagePickerControllerOriginalImage error", code: 0, userInfo: nil))
             return
         }
         
         guard let fixedImage = fixOrientation(img: image) else {
             AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (failed to fix orientation)")
+            Crashlytics.sharedInstance().recordError(NSError(domain: "fixOrientation error", code: 0, userInfo: nil))
             return
         }
 
@@ -648,6 +677,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // tell the model that we have an image
         self.viewModel.haveImage.value = .libraryPhoto
+        uploadAttempts = 0
     }
     
     //MARK:- UIPickerViewDataSource/UIPickerViewDelegate methods

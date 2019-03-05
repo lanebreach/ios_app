@@ -8,8 +8,8 @@
 
 import AWSDynamoDB
 import AWSS3
-import Fabric
 import Crashlytics
+import Fabric
 import MapKit
 import Mapbox
 import UIKit

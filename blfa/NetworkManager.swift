@@ -10,33 +10,64 @@ import AWSS3
 import CoreLocation
 import Foundation
 
-public struct NetworkManagerError: LocalizedError {
-    enum ErrorKind {
-        case networkGeneral
-        case networkBadHTTPStatus
-        case networkResponseMalformed
-        case networkJsonDecodeFailure
-        case dataTaskNullData
-        case imageUploadFailed
-        case missingServiceRequestId
-        case missingServiceRequestIdAndToken
+public class NetworkManagerError: NSError {
+    enum ErrorKind: Int {
+        case networkGeneral = -1
+        case networkBadHTTPStatus = -2
+        case networkResponseMalformed = -3
+        case networkJsonDecodeFailure = -4
+        case dataTaskNullData = -5
+        case imageUploadFailed = -6
+        case missingServiceRequestId = -7
+        case missingServiceRequestIdAndToken = -8
     }
     
-    let description: String?
     let kind: ErrorKind
     
-    init(_ kind: ErrorKind, description: String?, function: String = #function, line: Int = #line) {
+    init(_ kind: ErrorKind, description: String? = nil, httpStatusCode: Int? = nil, domain: String? = nil, function: String = #function, line: Int = #line) {
         self.kind = kind
         
+        var localizedDescription: String
         if let description = description {
-            self.description = "\(function):\(line) - \(description)"
+            localizedDescription = "\(function):\(line) - \(description)"
         } else {
-            self.description = "\(function):\(line)"
+            localizedDescription = "\(function):\(line)"
         }
+        
+        var errorDomain: String
+        if let domain = domain {
+            errorDomain = domain
+        } else {
+            if UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) {
+                errorDomain = "DevNetworkManagerError"
+            } else {
+                errorDomain = "NetworkManagerError"
+            }
+        }
+
+        // use HTTP status as NSError code, otherwise use Kind
+        var code: Int
+        if let httpStatusCode = httpStatusCode {
+            code = httpStatusCode
+        } else {
+            code = kind.rawValue
+        }
+        
+        super.init(domain: errorDomain, code: code, userInfo: [NSLocalizedDescriptionKey: localizedDescription])
     }
     
-    public var errorDescription: String? {
-        return description
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+public class MockNetworkManagerError: NetworkManagerError {
+    override init(_ kind: ErrorKind, description: String? = nil, httpStatusCode: Int? = nil, domain: String? = nil, function: String = #function, line: Int = #line) {
+        super.init(kind, description: description, httpStatusCode: httpStatusCode, domain: "MockNetworkManagerError")
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 
@@ -106,7 +137,7 @@ class NetworkManager {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    completion(nil, NetworkManagerError(.networkGeneral, description: error != nil ? "error=\(error!)" : "no data"))
+                    completion(nil, NetworkManagerError(.networkGeneral, description: error != nil ? "error='\(error!)'" : "error='no data'"))
                     return
                 }
                 
@@ -114,7 +145,7 @@ class NetworkManager {
                 if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
                     print("statusCode should be 200, but is \(httpStatus.statusCode)")
                     print("response = \(httpStatus)")
-                    completion(nil, NetworkManagerError(.networkBadHTTPStatus, description: "status=\(httpStatus.statusCode)"))
+                    completion(nil, NetworkManagerError(.networkBadHTTPStatus, httpStatusCode: httpStatus.statusCode))
                     return
                 }
                 
@@ -128,10 +159,10 @@ class NetworkManager {
                             print("serviceRequestId: \(serviceRequestId)")
                             completion(serviceRequestId, nil)
                         } else {
-                            completion(nil, NetworkManagerError(.missingServiceRequestId, description: ""))
+                            completion(nil, NetworkManagerError(.missingServiceRequestId))
                         }
                     } else {
-                        completion(nil, NetworkManagerError(.networkJsonDecodeFailure, description: ""))
+                        completion(nil, NetworkManagerError(.networkJsonDecodeFailure))
                     }
                 }
             }
@@ -140,7 +171,7 @@ class NetworkManager {
     }
 
     func mockUploadReport(progressMessage: @escaping (String) -> Void,
-                          completion: @escaping (_ serviceRequestId: String?, _ token: String?, _ error: Error?) -> Void) {
+                          completion: @escaping (_ serviceRequestId: String?, _ token: String?, _ error: NetworkManagerError?) -> Void) {
         
         if mockUploadReportCount == 7 {
             mockUploadReportCount = 0
@@ -151,21 +182,21 @@ class NetworkManager {
         progressMessage("Uploading image")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             if self.mockUploadReportCount == 0 {
-                completion(nil, nil, NetworkManagerError(.imageUploadFailed, description: "error='mock image upload failed'"))
+                completion(nil, nil, MockNetworkManagerError(.imageUploadFailed, description: "error='mock image upload failed'"))
             } else {
                 progressMessage("Uploading details")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     switch self.mockUploadReportCount {
                     case 1:
-                        completion(nil, nil, NetworkManagerError(.dataTaskNullData, description: "error='mock error'"))
+                        completion(nil, nil, MockNetworkManagerError(.dataTaskNullData, description: "error='mock error'"))
                     case 2:
-                        completion(nil, nil, NetworkManagerError(.networkBadHTTPStatus, description: "status=mock error"))
+                        completion(nil, nil, MockNetworkManagerError(.networkBadHTTPStatus, httpStatusCode: 999))
                     case 3:
-                        completion(nil, nil, NetworkManagerError(.missingServiceRequestIdAndToken, description: ""))
+                        completion(nil, nil, MockNetworkManagerError(.missingServiceRequestIdAndToken))
                     case 4:
-                        completion(nil, nil, NetworkManagerError(.networkJsonDecodeFailure, description: ""))
+                        completion(nil, nil, MockNetworkManagerError(.networkJsonDecodeFailure))
                     case 5:
-                        completion(nil, nil, NetworkManagerError(.networkResponseMalformed, description: ""))
+                        completion(nil, nil, MockNetworkManagerError(.networkResponseMalformed))
                     case 6:
                         completion("123", nil, nil)
                     case 7:
@@ -182,7 +213,7 @@ class NetworkManager {
                       emailAddress: String?, fullName: String?, phoneNumber: String?,
                       category: String, description: String,
                       progressMessage: @escaping (String) -> Void,
-                      completion: @escaping (_ serviceRequestId: String?, _ token: String?, _ error: Error?) -> Void) {
+                      completion: @escaping (_ serviceRequestId: String?, _ token: String?, _ error: NetworkManagerError?) -> Void) {
         
         if AppDelegate.getMockTestEnable(for: .useMockUpload) {
             mockUploadReport(progressMessage: progressMessage, completion: completion)
@@ -271,7 +302,7 @@ class NetworkManager {
                     if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
                         print("statusCode should be 201, but is \(httpStatus.statusCode)")
                         print("response = \(httpStatus)")
-                        completion(nil, nil, NetworkManagerError(.networkBadHTTPStatus, description: "status=\(httpStatus.statusCode)"))
+                        completion(nil, nil, NetworkManagerError(.networkBadHTTPStatus, httpStatusCode: httpStatus.statusCode))
                         return
                     }
                     
@@ -289,18 +320,19 @@ class NetworkManager {
                                 // need a delay to allow 311 to get a service request ID
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                     self.getServiceRequestId(from: token, completion: { (serviceRequestId, error) in
+                                        // don't pass the error, if any, along cuz we've always got a token
                                         completion(serviceRequestId, token, nil)
                                     })
                                 }
                                 return
                             } else {
-                                completion(nil, nil, NetworkManagerError(.missingServiceRequestIdAndToken, description: ""))
+                                completion(nil, nil, NetworkManagerError(.missingServiceRequestIdAndToken))
                             }
                         } else {
-                            completion(nil, nil, NetworkManagerError(.networkJsonDecodeFailure, description: ""))
+                            completion(nil, nil, NetworkManagerError(.networkJsonDecodeFailure))
                         }
                     } else {
-                        completion(nil, nil, NetworkManagerError(.networkResponseMalformed, description: ""))
+                        completion(nil, nil, NetworkManagerError(.networkResponseMalformed))
                     }
                     
                     print("\(Date().timeIntervalSince1970) done metadata upload")
