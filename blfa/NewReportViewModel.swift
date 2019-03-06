@@ -24,8 +24,9 @@ class NewReportViewModel {
     let emailAddress: MutableProperty<String?>
     let fullName: MutableProperty<String?>
     let phoneNumber: MutableProperty<String?>
-    let description: MutableProperty<String>
+    
     let category: MutableProperty<String>
+    let description: MutableProperty<String>
     let haveImage: MutableProperty<PendingImageType>
     let imageLocation: MutableProperty<CLLocationCoordinate2D?>
     
@@ -38,10 +39,11 @@ class NewReportViewModel {
                                 "Commuter Shuttle", "Uber", "Lyft", "Uber/Lyft",
                                 defaultCategory]    //  TODO/FUTURE - let user enter optional text to replace "other"?
     
-    init(initialCategory: String) {
+    init() {
         self.emailAddress = MutableProperty(nil)
         self.fullName = MutableProperty(nil)
         self.phoneNumber = MutableProperty(nil)
+        
         self.description = MutableProperty("")
         self.category = MutableProperty("")
         self.haveImage = MutableProperty(.none)
@@ -68,7 +70,15 @@ class NewReportViewModel {
         DispatchQueue.main.async {
             // set this after configuring categorySignal so that this gets tracked as a change
             // do this async so that binding code executing immediately after we are constructed will complete first
-            self.category.value = initialCategory
+            self.reset()
         }
+    }
+    
+    // note: this does not reset the user properties (email/name/phone)
+    func reset() {
+        self.haveImage.value = .none
+        self.imageLocation.value = nil
+        self.category.value = NewReportViewModel.defaultCategory
+        self.description.value = ""
     }
 }

@@ -16,7 +16,7 @@ public class NetworkManagerError: NSError {
         case networkBadHTTPStatus = -2
         case networkResponseMalformed = -3
         case networkJsonDecodeFailure = -4
-        case dataTaskNullData = -5
+        case dataTaskNullDataOrError = -5
         case imageUploadFailed = -6
         case missingServiceRequestId = -7
         case missingServiceRequestIdAndToken = -8
@@ -78,6 +78,8 @@ class NetworkManager {
 
     static let shared = NetworkManager()
     var debugLastHttpPost: String?
+    var uploadReportTaskId: UIBackgroundTaskIdentifier?
+    var uploadReportCompletion: ((_ serviceRequestId: String?, _ token: String?, _ error: NetworkManagerError?) -> Void)?
     
     func updateTabBarStyleForCurrentServer(vc: UIViewController) {
         vc.tabBarController?.tabBar.barTintColor = UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? UIColor.red : UIColor.lightGray
@@ -188,9 +190,9 @@ class NetworkManager {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     switch self.mockUploadReportCount {
                     case 1:
-                        completion(nil, nil, MockNetworkManagerError(.dataTaskNullData, description: "error='mock error'"))
+                        completion(nil, nil, MockNetworkManagerError(.dataTaskNullDataOrError, description: "error='mock error'"))
                     case 2:
-                        completion(nil, nil, MockNetworkManagerError(.networkBadHTTPStatus, httpStatusCode: 999))
+                        completion(nil, nil, MockNetworkManagerError(.networkBadHTTPStatus, httpStatusCode: 400))
                     case 3:
                         completion(nil, nil, MockNetworkManagerError(.missingServiceRequestIdAndToken))
                     case 4:
@@ -209,6 +211,39 @@ class NetworkManager {
         }
     }
     
+    func beginUploadReportTask() {
+        let taskId = UIApplication.shared.beginBackgroundTask(expirationHandler: {
+            self.endUploadReportTask()
+        })
+        
+        if taskId != UIBackgroundTaskInvalid {
+            print("*** starting background task with ID \(taskId)")
+            self.uploadReportTaskId = taskId
+        } else {
+            print("*** failed to start background task")
+            self.uploadReportTaskId = nil
+        }
+    }
+    
+    func endUploadReportTask() {
+        if let uploadReportTaskId = uploadReportTaskId {
+            print("*** ending background task with ID \(uploadReportTaskId)")
+            UIApplication.shared.endBackgroundTask(uploadReportTaskId)
+            self.uploadReportTaskId = nil
+        }
+    }
+    
+    func reportCompletionAndEndUploadReportTask(_ serviceRequestId: String?, _ token: String?, _ error: NetworkManagerError?) {
+        if let uploadReportCompletion = uploadReportCompletion {
+            uploadReportCompletion(serviceRequestId, token, error)
+            self.uploadReportCompletion = nil
+        } else {
+            assertionFailure()
+        }
+        
+        self.endUploadReportTask()
+    }
+    
     func uploadReport(image: UIImage, filename: String, location: CLLocationCoordinate2D,
                       emailAddress: String?, fullName: String?, phoneNumber: String?,
                       category: String, description: String,
@@ -220,11 +255,13 @@ class NetworkManager {
             return
         }
         
+        uploadReportCompletion = completion
+        beginUploadReportTask()
         progressMessage("Uploading image")
         self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
             print("\(Date().timeIntervalSince1970) start metadata upload")
             if let error = error {
-                completion(nil, nil, NetworkManagerError(.imageUploadFailed, description: "error='\(error)'"))
+                self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.imageUploadFailed, description: "error='\(error)'"))
                 return
             }
             
@@ -294,7 +331,7 @@ class NetworkManager {
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
                 DispatchQueue.main.async {
                     guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                        completion(nil, nil, NetworkManagerError(.dataTaskNullData, description: "error='\(String(describing: error))'"))
+                        self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.dataTaskNullDataOrError, description: "error='\(String(describing: error))'"))
                         return
                     }
                     
@@ -302,7 +339,7 @@ class NetworkManager {
                     if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 201 {           // check for http errors
                         print("statusCode should be 201, but is \(httpStatus.statusCode)")
                         print("response = \(httpStatus)")
-                        completion(nil, nil, NetworkManagerError(.networkBadHTTPStatus, httpStatusCode: httpStatus.statusCode))
+                        self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.networkBadHTTPStatus, httpStatusCode: httpStatus.statusCode))
                         return
                     }
                     
@@ -315,24 +352,24 @@ class NetworkManager {
                         if let dictionary = json as? [[String: Any]] {
                             if let serviceRequestId = dictionary[0]["service_request_id"] as? String {
                                 print("serviceRequestId: \(serviceRequestId)")
-                                completion(serviceRequestId, nil, nil)
+                                self.reportCompletionAndEndUploadReportTask(serviceRequestId, nil, nil)
                             } else if let token = dictionary[0]["token"] as? String {
                                 // need a delay to allow 311 to get a service request ID
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                     self.getServiceRequestId(from: token, completion: { (serviceRequestId, error) in
                                         // don't pass the error, if any, along cuz we've always got a token
-                                        completion(serviceRequestId, token, nil)
+                                        self.reportCompletionAndEndUploadReportTask(serviceRequestId, token, nil)
                                     })
                                 }
                                 return
                             } else {
-                                completion(nil, nil, NetworkManagerError(.missingServiceRequestIdAndToken))
+                                self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.missingServiceRequestIdAndToken))
                             }
                         } else {
-                            completion(nil, nil, NetworkManagerError(.networkJsonDecodeFailure))
+                            self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.networkJsonDecodeFailure))
                         }
                     } else {
-                        completion(nil, nil, NetworkManagerError(.networkResponseMalformed))
+                        self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.networkResponseMalformed))
                     }
                     
                     print("\(Date().timeIntervalSince1970) done metadata upload")

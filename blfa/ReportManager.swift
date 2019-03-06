@@ -60,9 +60,10 @@ class ReportManager {
             report["token"] = token
         }
 
-        if let httpPost = httpPost {
-            report["httpPost"] = httpPost
-        }
+        // this is only needed for debugging:
+//        if let httpPost = httpPost {
+//            report["httpPost"] = httpPost
+//        }
 
         reports?.append(report)
         

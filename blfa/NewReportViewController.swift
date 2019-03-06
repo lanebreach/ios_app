@@ -156,7 +156,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
 
         // model
-        viewModel = NewReportViewModel(initialCategory: NewReportViewModel.defaultCategory)
+        viewModel = NewReportViewModel()
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
@@ -384,10 +384,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     @IBAction func changePhotoAction(sender: UIButton?) {
         // reset model
         self.imageView.image = nil
-        self.viewModel.haveImage.value = .none
-        self.viewModel.imageLocation.value = nil
-        self.viewModel.category.value = NewReportViewModel.defaultCategory
-        self.viewModel.description.value = ""
+        self.viewModel.reset()
 
         // hide keyboard, if any
         self.categoryTextField.resignFirstResponder()
@@ -489,23 +486,28 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 // report to crashlytics as non-fatal error
                 Crashlytics.sharedInstance().recordError(error)
                 
-                var gotTransientError = false
+                var gotTransientError: Bool
                 switch error.kind {
-                case .imageUploadFailed:
-                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed. Please try again.")
+                case .imageUploadFailed, .dataTaskNullDataOrError:
                     gotTransientError = true
-                case .dataTaskNullData, .networkBadHTTPStatus:
-                    if self.showDebugMessages {
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with transient error: \(error)")
-                    } else {
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed (code \(error.code)). Please try again.")
-                    }
-                    gotTransientError = true
+                case .networkBadHTTPStatus:
+                    // note: we treat HTTP status codes 400-499 as permanent errors
+                    gotTransientError = (error.code < 400) || (error.code > 499)
                 default:
-                    break
+                    gotTransientError = false
                 }
                 
-                if !gotTransientError {
+                if gotTransientError {
+                    if error.kind == .imageUploadFailed {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the image failed. Please try again.")
+                    } else {
+                        if self.showDebugMessages {
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with transient error: \(error)")
+                        } else {
+                            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed (code \(error.code)). Please try again.")
+                        }
+                    }
+                } else {
                     if self.showDebugMessages {
                         AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: uploading the report failed with permanent error: \(error)")
                     } else {
