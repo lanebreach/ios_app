@@ -27,7 +27,7 @@ class NewReportViewModel {
     let description: MutableProperty<String>
     let category: MutableProperty<String>
     let haveImage: MutableProperty<PendingImageType>
-    let currentLocation: MutableProperty<CLLocationCoordinate2D?>
+    let imageLocation: MutableProperty<CLLocationCoordinate2D?>
     
     var categorySignal: Signal<String, NoError>
     var descriptionSignal: Signal<String, NoError>
@@ -45,24 +45,24 @@ class NewReportViewModel {
         self.description = MutableProperty("")
         self.category = MutableProperty("")
         self.haveImage = MutableProperty(.none)
-        self.currentLocation = MutableProperty(nil)
+        self.imageLocation = MutableProperty(nil)
         
         self.categorySignal = self.category.signal
         self.descriptionSignal = self.description.signal
         
         // output true if the email address has 3+ chars and we have a valid category/image/location
-        self.okToSendSignal = Signal.combineLatest(self.category.signal, self.haveImage.signal, self.currentLocation.signal)
+        self.okToSendSignal = Signal.combineLatest(self.category.signal, self.haveImage.signal, self.imageLocation.signal)
             .map { (arg) -> Bool in
                 
-                let (category, haveImage, currentLocation) = arg
+                let (category, haveImage, imageLocation) = arg
                 
-                print("category=\(category), haveImage=\(haveImage), currentLocation=\(String(describing: currentLocation))")
-                return (category.count > 1) && (haveImage != .none) && (currentLocation != nil)
+                print("category=\(category), haveImage=\(haveImage), imageLocation=\(String(describing: imageLocation))")
+                return (category.count > 1) && (haveImage != .none) && (imageLocation != nil)
         }
         
-        self.locationStatusSignal = self.currentLocation.signal
-            .map { (currentLocation) -> Bool in
-                return currentLocation != nil
+        self.locationStatusSignal = self.imageLocation.signal
+            .map { (imageLocation) -> Bool in
+                return imageLocation != nil
         }
         
         DispatchQueue.main.async {

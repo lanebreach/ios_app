@@ -209,7 +209,7 @@ class NetworkManager {
         }
     }
     
-    func uploadReport(image: UIImage, filename: String, currentLocation: CLLocationCoordinate2D,
+    func uploadReport(image: UIImage, filename: String, location: CLLocationCoordinate2D,
                       emailAddress: String?, fullName: String?, phoneNumber: String?,
                       category: String, description: String,
                       progressMessage: @escaping (String) -> Void,
@@ -239,8 +239,8 @@ class NetworkManager {
             var parameters = [
                 "api_key": UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? Keys.apiKey : Keys.apiKeyProduction,
                 "service_code": "5a6b5ac2d0521c1134854b01",
-                "lat": String(currentLocation.latitude),
-                "long": String(currentLocation.longitude),
+                "lat": String(location.latitude),
+                "long": String(location.longitude),
                 "media_url": mediaUrl,
                 "description": fullDescription,
                 "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"

@@ -53,7 +53,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
     var tipViews: [TipIdentifier:EasyTipView] = [:]
-    var selectingLibraryPhoto = false
+    var currentLocation: (CLLocationCoordinate2D, Date)?
     var uploadAttempts = 0
     
     //MARK:- Internal methods
@@ -108,7 +108,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
     }
     
-    func updateLocation(showAlertOnError: Bool) {
+    func startUpdatingLocation(showAlertOnError: Bool) {
+        self.currentLocation = nil
+        
         if CLLocationManager.locationServicesEnabled() == true {
             if CLLocationManager.authorizationStatus() == .restricted || CLLocationManager.authorizationStatus() == .denied ||  CLLocationManager.authorizationStatus() == .notDetermined {
                 self.locationManager.requestWhenInUseAuthorization()
@@ -140,11 +142,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     // reset for the next submission
     func resetReport() {
-        self.imageView.image = nil
-        self.viewModel.haveImage.value = .none
-        self.viewModel.category.value = NewReportViewModel.defaultCategory
-        self.viewModel.description.value = ""
-        
         self.changePhotoAction(sender: nil)
     }
     
@@ -167,6 +164,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.viewModel.locationStatusSignal.observeValues { value in
             print("locationStatusSignal: \(value)")
             self.locationImageView.image = UIImage(named: value ? "ic_location_black" : "ic_location_bad_black")
+            if !value {
+                self.startUpdatingLocation(showAlertOnError: false)
+            } else {
+                self.locationManager.stopUpdatingLocation()
+            }
         }
         
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
@@ -270,6 +272,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+        
+        self.locationManager.stopUpdatingLocation()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -284,16 +288,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.viewModel.fullName.value = UserDefaults.standard.string(forKey: kUserDefaultsNameKey)
         self.viewModel.phoneNumber.value = UserDefaults.standard.string(forKey: kUserDefaultsPhoneKey)
         
-        if !selectingLibraryPhoto && self.viewModel.haveImage.value != .libraryPhoto {
-            // get a new location if we didn't return from selecting a library photo (and don't have a previously selected library photo)
-            self.viewModel.currentLocation.value = nil
-            
-            updateLocation(showAlertOnError: true)
+        if self.viewModel.imageLocation.value == nil {
+            // continuously get locations if we don't have an image or if we have a camera photo but still need a location
+            startUpdatingLocation(showAlertOnError: true)
         }
         
-        // for next time
-        selectingLibraryPhoto = false
-
         // add tips, if any
         var tipView: EasyTipView
         if tipViews[.newReportMain] == nil && AppDelegate.shouldShowTip(id: .newReportMain) {
@@ -368,9 +367,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // Call capturePhoto method by passing our photo settings and a
         // delegate implementing AVCapturePhotoCaptureDelegate
         capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-        
-        // and update our location since we may have moved...
-        updateLocation(showAlertOnError: false)
     }
     
     @IBAction func photoLibraryAction(sender: UIButton) {
@@ -383,11 +379,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         vc.allowsEditing = false
         vc.delegate = self
         present(vc, animated: true)
-        
-        selectingLibraryPhoto = true
     }
     
     @IBAction func changePhotoAction(sender: UIButton?) {
+        // reset model
+        self.imageView.image = nil
+        self.viewModel.haveImage.value = .none
+        self.viewModel.imageLocation.value = nil
+        self.viewModel.category.value = NewReportViewModel.defaultCategory
+        self.viewModel.description.value = ""
+
+        // hide keyboard, if any
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
         
@@ -406,7 +408,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
 
-        if self.viewModel.currentLocation.value != nil {
+        if self.viewModel.imageLocation.value != nil {
             switch self.viewModel.haveImage.value {
             case .none:
                 AppDelegate.showSimpleAlertWithOK(vc: self, "Current location found. You may now SEND a new report to 311 as long as you have taken a picture and selected a category. Or you can select a photo from your library that was captured with its location.")
@@ -446,14 +448,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             return
         }
         
-        // this func should not get called if we don't have a currentLocation
-        guard let currentLocation = self.viewModel.currentLocation.value else {
+        // this func should not get called if we don't have an imageLocation
+        guard let imageLocation = self.viewModel.imageLocation.value else {
             assert(false)
             return
         }
         
         // we already checked a library image earlier
-        if !locationIsInSanFrancisco(currentLocation) {
+        if !locationIsInSanFrancisco(imageLocation) {
             AppDelegate.showSimpleAlertWithOK(vc: self, "Sorry, you appear to be outside San Francisco. This app is only used to report bike lane violations within SF.")
             return
         }
@@ -471,7 +473,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         uploadAttempts += 1
         NetworkManager.shared.uploadReport(image: image,
                                            filename: filename,
-                                           currentLocation: currentLocation,
+                                           location: imageLocation,
                                            emailAddress: self.viewModel.emailAddress.value,
                                            fullName: self.viewModel.fullName.value,
                                            phoneNumber: self.viewModel.phoneNumber.value,
@@ -540,7 +542,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             }
             
             if addAndResetReport {
-                ReportManager.shared.addReport(location: currentLocation,
+                ReportManager.shared.addReport(location: imageLocation,
                                                description: self.viewModel.description.value,
                                                category: self.viewModel.category.value,
                                                serviceRequestId: serviceRequestId,
@@ -554,18 +556,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     //MARK:- CLLocationManagerDelegate methods
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard self.viewModel.haveImage.value != .libraryPhoto else {
-            // a library photo was selected since we started to find a location - so we don't need it now
-            return
-        }
-        
         if locations.count > 0 {
             let location = locations[0]
             // TOOD - what's a reasonable requirement for accuracy?
             if location.horizontalAccuracy < 50 {
                 print("got location \(location.coordinate)")
-                self.viewModel.currentLocation.value = location.coordinate
-                self.locationManager.stopUpdatingLocation()
+                self.currentLocation = (location.coordinate, Date())
+
+                // if the user took a photo and we're just waiting for a location, store it now
+                if self.viewModel.haveImage.value == .cameraPhoto && self.viewModel.imageLocation.value == nil {
+                    self.viewModel.imageLocation.value = location.coordinate
+                }
             }
         }
     }
@@ -624,8 +625,23 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             self.view.layoutIfNeeded()
         }
         
-        // tell the model that we have an image
+        // tell the model that we have an image and a location (maybe)
         self.viewModel.haveImage.value = .cameraPhoto
+        if let currentLocation = self.currentLocation {
+            let age = currentLocation.1.timeIntervalSinceNow
+            print("location age: \(age)")
+            if age > -30 {
+                self.viewModel.imageLocation.value = currentLocation.0
+            }
+        }
+
+        // if we don't have a location yet for this image, kick the location manager (in theory, this is not necessary)
+        if self.viewModel.imageLocation.value == nil {
+            print("kicking the location manager")
+            self.locationManager.stopUpdatingLocation()
+            self.startUpdatingLocation(showAlertOnError: false)
+        }
+        
         uploadAttempts = 0
     }
     
@@ -662,8 +678,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             return
         }
         
-        self.viewModel.currentLocation.value = coordinate
-
         captureSession?.stopRunning()
 
         // update the image, hide the preview + photo buttons, slide up the control panel
@@ -677,6 +691,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // tell the model that we have an image
         self.viewModel.haveImage.value = .libraryPhoto
+        self.viewModel.imageLocation.value = coordinate
         uploadAttempts = 0
     }
     
