@@ -68,7 +68,7 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
         }
         
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "M/dd h:mma"
+        dateFormatter.dateFormat = "M/d/yy h:mma"
         
         // update all annotations of user-submitted reports
         if let annotations = mapView.annotations {
@@ -98,8 +98,13 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
                         info += "..."
                     }
                 }
+                
+                if info.count == 0 {
+                    info = "Lane breach"
+                }
+                
                 if let category = report["category"] as? String {
-                    info += ((info.count > 0) ? " " : "") + "(\(category))"
+                    info += " (\(category))"
                 }
                 
                 reportAnnotation.title = info

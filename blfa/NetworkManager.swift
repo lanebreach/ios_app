@@ -354,14 +354,18 @@ class NetworkManager {
                                 print("serviceRequestId: \(serviceRequestId)")
                                 self.reportCompletionAndEndUploadReportTask(serviceRequestId, nil, nil)
                             } else if let token = dictionary[0]["token"] as? String {
+                                print("token: \(token)")
+                                self.reportCompletionAndEndUploadReportTask(nil, token, nil)
+                                
                                 // need a delay to allow 311 to get a service request ID
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    self.getServiceRequestId(from: token, completion: { (serviceRequestId, error) in
-                                        // don't pass the error, if any, along cuz we've always got a token
-                                        self.reportCompletionAndEndUploadReportTask(serviceRequestId, token, nil)
-                                    })
-                                }
-                                return
+                                // this never seems to succeed on dev or prod, so might as well complete faster and skip it
+//                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//                                    self.getServiceRequestId(from: token, completion: { (serviceRequestId, error) in
+//                                        // don't pass the error, if any, along cuz we've always got a token
+//                                        self.reportCompletionAndEndUploadReportTask(serviceRequestId, token, nil)
+//                                    })
+//                                }
+//                                return
                             } else {
                                 self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.missingServiceRequestIdAndToken))
                             }
