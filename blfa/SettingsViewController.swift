@@ -136,12 +136,16 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         
+        return true
+    }
+    
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         switch textField {
         case emailTextField:
             if let text = textField.text, text != "" {
                 if !isValidEmail(testStr: text) {
                     AppDelegate.showSimpleAlertWithOK(vc: self, "Invalid email address")
-                    return true
+                    return false
                 }
             }
             

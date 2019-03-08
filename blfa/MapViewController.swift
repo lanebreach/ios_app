@@ -23,7 +23,7 @@ class MapViewController: UIViewController, MGLMapViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let url = URL(string: "mapbox://styles/agaesser/cjse25orf1sqx1fl1tq1zrrh9")
+        let url = URL(string: "mapbox://styles/agaesser/cjn5lb26b0gty2rnr3laj0ljd")
         mapView = MGLMapView(frame: view.bounds, styleURL: url)
         guard let mapView = mapView else {
             return
