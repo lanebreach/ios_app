@@ -108,8 +108,13 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
     }
     
+    func updateLocationIcon(found: Bool) {
+        self.locationImageView.image = UIImage(named: found ? "ic_location_black" : "ic_location_bad_black")
+    }
+    
     func startUpdatingLocation(showAlertOnError: Bool) {
         self.currentLocation = nil
+        updateLocationIcon(found: false)
         
         if CLLocationManager.locationServicesEnabled() == true {
             if CLLocationManager.authorizationStatus() == .restricted || CLLocationManager.authorizationStatus() == .denied ||  CLLocationManager.authorizationStatus() == .notDetermined {
@@ -163,7 +168,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.descriptionTextField.reactive.text <~ self.viewModel.descriptionSignal
         self.viewModel.locationStatusSignal.observeValues { value in
             print("locationStatusSignal: \(value)")
-            self.locationImageView.image = UIImage(named: value ? "ic_location_black" : "ic_location_bad_black")
             if !value {
                 self.startUpdatingLocation(showAlertOnError: false)
             } else {
@@ -405,7 +409,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
 
-        if self.viewModel.imageLocation.value != nil {
+        if self.currentLocation != nil || self.viewModel.imageLocation.value != nil {
             switch self.viewModel.haveImage.value {
             case .none:
                 AppDelegate.showSimpleAlertWithOK(vc: self, "Current location found. You may now SEND a new report to 311 as long as you have taken a picture and selected a category. Or you can select a photo from your library that was captured with its location.")
@@ -564,11 +568,13 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             if location.horizontalAccuracy < 50 {
                 print("got location \(location.coordinate)")
                 self.currentLocation = (location.coordinate, Date())
-
+                
                 // if the user took a photo and we're just waiting for a location, store it now
                 if self.viewModel.haveImage.value == .cameraPhoto && self.viewModel.imageLocation.value == nil {
                     self.viewModel.imageLocation.value = location.coordinate
                 }
+
+                updateLocationIcon(found: true)
             }
         }
     }
@@ -644,7 +650,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             self.startUpdatingLocation(showAlertOnError: false)
         }
         
-        uploadAttempts = 0
+        self.uploadAttempts = 0
     }
     
     //MARK:- UIImagePickerControllerDelegate methods
@@ -694,7 +700,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // tell the model that we have an image
         self.viewModel.haveImage.value = .libraryPhoto
         self.viewModel.imageLocation.value = coordinate
-        uploadAttempts = 0
+        updateLocationIcon(found: true)
+        self.uploadAttempts = 0
     }
     
     //MARK:- UIPickerViewDataSource/UIPickerViewDelegate methods

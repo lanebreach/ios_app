@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.0.0 (10)
+- new report screen - update the location icon based on having captured a valid location or the image having a location
+
 ## 1.0.0 (9)
 - updated map style to point to the latest iOS mapbox style
 - settings screen - fixed bug where the fields were not updated unless the user pressed return after changing each one
