@@ -40,10 +40,10 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         resetTipsLabel.isUserInteractionEnabled = true
         resetTipsLabel.addGestureRecognizer(tapper)
 
-        tapper = UITapGestureRecognizer(target:self, action:#selector(self.changeServerAction(sender:)))
-        tapper.numberOfTouchesRequired = 1
+        let longTapper = UILongPressGestureRecognizer(target:self, action:#selector(self.changeServerAction(sender:)))
+        longTapper.numberOfTouchesRequired = 1
         changeServerHiddenView.isUserInteractionEnabled = true
-        changeServerHiddenView.addGestureRecognizer(tapper)
+        changeServerHiddenView.addGestureRecognizer(longTapper)
 
         if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             let appBundleVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
@@ -99,7 +99,11 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         AppDelegate.showSimpleAlertWithOK(vc: self, "All hints restored")
     }
     
-    @objc func changeServerAction(sender: UITapGestureRecognizer?) {
+    @objc func changeServerAction(sender: UILongPressGestureRecognizer?) {
+        guard sender?.state == .ended else {
+            return
+        }
+        
         let alertController = UIAlertController(title: nil, message: "Change server?", preferredStyle: .alert)
         alertController.addTextField { textField in
             textField.placeholder = "Password"

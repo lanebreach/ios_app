@@ -48,12 +48,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var captureSession: AVCaptureSession?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     var capturePhotoOutput: AVCapturePhotoOutput?
+    var flashSupported: Bool = false
     var flashMode: AVCaptureDevice.FlashMode = .auto
     
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
     var tipViews: [TipIdentifier:EasyTipView] = [:]
     var currentLocation: (CLLocationCoordinate2D, Date)?
+    var locationCount = 0
     var uploadAttempts = 0
     
     //MARK:- Internal methods
@@ -113,7 +115,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     func startUpdatingLocation(showAlertOnError: Bool) {
-        self.currentLocation = nil
+        locationCount = 0
+        currentLocation = nil
         updateLocationIcon(found: false)
         
         if CLLocationManager.locationServicesEnabled() == true {
@@ -216,14 +219,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         locationImageView.isUserInteractionEnabled = true
         locationImageView.addGestureRecognizer(tapper)
         
-        // set up flash icon/tap event handlers - start with auto
-        flashMode = .off
-        flashButtonPressed(sender: nil)
-        tapper = UITapGestureRecognizer(target:self, action:#selector(self.flashButtonPressed(sender:)))
-        tapper.numberOfTouchesRequired = 1
-        flashImageView.isUserInteractionEnabled = true
-        flashImageView.addGestureRecognizer(tapper)
-        
         #if (!targetEnvironment(simulator))
         
             // preview image
@@ -241,12 +236,20 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     
                     // Get an instance of ACCapturePhotoOutput class
                     capturePhotoOutput = AVCapturePhotoOutput()
-                    capturePhotoOutput?.isHighResolutionCaptureEnabled = true
                     
                     // Set the output on the capture session
                     if let capturePhotoOutput = capturePhotoOutput {
+                        capturePhotoOutput.isHighResolutionCaptureEnabled = true
+
                         captureSession!.addOutput(capturePhotoOutput)
                         captureSession!.startRunning()
+
+                        // allow changing flash modes if we support off/on/auto (must check after adding to captureSession)
+                        if capturePhotoOutput.supportedFlashModes.count == 3 {
+                            flashSupported = true
+                        } else {
+                            flashSupported = false
+                        }
                     } else {
                         if showDebugMessages {
                             AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: AVCapturePhotoOutput() failed")
@@ -268,6 +271,18 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         #endif
         
+        if flashSupported {
+            // set up flash icon/tap event handlers - start with off (flashButtonPressed will toggle from .on --> .off)
+            flashMode = .on
+            flashButtonPressed(sender: nil)
+            tapper = UITapGestureRecognizer(target:self, action:#selector(self.flashButtonPressed(sender:)))
+            tapper.numberOfTouchesRequired = 1
+            flashImageView.isUserInteractionEnabled = true
+            flashImageView.addGestureRecognizer(tapper)
+        } else {
+            flashImageView.image = nil
+        }
+
         super.viewDidLoad()
     }
     
@@ -319,7 +334,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             tipViews[.newReportLocation] = tipView
         }
         
-        if tipViews[.newReportFlash] == nil && AppDelegate.shouldShowTip(id: .newReportFlash) {
+        if flashSupported && tipViews[.newReportFlash] == nil && AppDelegate.shouldShowTip(id: .newReportFlash) {
             tipView = EasyTipView(text: "Touch this icon to change the camera's flash mode",
                                   preferences: tipViewPreferences(verticalOffset: 100, arrowPosition: .top),
                                   delegate: self)
@@ -366,7 +381,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // Set photo settings for our need
         photoSettings.isAutoStillImageStabilizationEnabled = true
-        photoSettings.flashMode = flashMode
+        photoSettings.flashMode = flashSupported ? flashMode : .off
         
         // Call capturePhoto method by passing our photo settings and a
         // delegate implementing AVCapturePhotoCaptureDelegate
@@ -428,6 +443,10 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
 
     @objc func flashButtonPressed(sender: UITapGestureRecognizer?) {
+        guard flashSupported else {
+            return
+        }
+        
         switch flashMode {
         case .auto:
             flashMode = .on
@@ -562,10 +581,18 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     //MARK:- CLLocationManagerDelegate methods
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let kLocationMinCount = 3
+        let kLocationMinAccuracy = 50
+        
         if locations.count > 0 {
             let location = locations[0]
-            // TOOD - what's a reasonable requirement for accuracy?
-            if location.horizontalAccuracy < 50 {
+            
+            if locationCount < kLocationMinCount {
+                locationCount += 1
+            }
+            
+            // accept this location if the accuracy is good enough or we've tried a few times (and prob aren't going to get anything better)
+            if (Int(location.horizontalAccuracy) < kLocationMinAccuracy) || (locationCount == kLocationMinCount) {
                 print("got location \(location.coordinate)")
                 self.currentLocation = (location.coordinate, Date())
                 
