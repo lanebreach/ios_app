@@ -583,6 +583,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let kLocationMinCount = 3
         let kLocationMinAccuracy = 50
+        let kLocationAbsoluteMinAccuracy = 100
         
         if locations.count > 0 {
             let location = locations[0]
@@ -592,7 +593,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             }
             
             // accept this location if the accuracy is good enough or we've tried a few times (and prob aren't going to get anything better)
-            if (Int(location.horizontalAccuracy) < kLocationMinAccuracy) || (locationCount == kLocationMinCount) {
+            if ((Int(location.horizontalAccuracy) <= kLocationMinAccuracy) || (locationCount == kLocationMinCount)) &&
+                (Int(location.horizontalAccuracy) <= kLocationAbsoluteMinAccuracy) {
+                
                 print("got location \(location.coordinate)")
                 self.currentLocation = (location.coordinate, Date())
                 

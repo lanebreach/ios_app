@@ -3,9 +3,9 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 1.0.0 (11)
+## 1.0.0 (12)
 - change deployment target to iOS 11 (from 11.4)
-- new report screen - don't allow changing the flash mode if the device doesn't support it otherwise start with the flash off; (grudgingly) accept the 3rd location if our accuracy requirement isn't met.
+- new report screen - don't allow changing the flash mode if the device doesn't support it otherwise start with the flash off; (grudgingly) accept the 3rd location if our accuracy requirement isn't met as long as it's 100m or better.
 - settings screen - change the server switch action to be long-press; tweak text/positions to look better on smaller screens.
 
 ## 1.0.0 (10)
