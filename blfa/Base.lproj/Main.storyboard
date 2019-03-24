@@ -118,6 +118,32 @@
                                     <constraint firstAttribute="width" constant="48" id="XgF-om-vxc"/>
                                 </constraints>
                             </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="o7b-fD-9PI">
+                                <rect key="frame" x="319" y="562" width="48" height="48"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="zoom_icon" translatesAutoresizingMaskIntoConstraints="NO" id="CJU-Lf-lCv">
+                                        <rect key="frame" x="0.0" y="0.0" width="48" height="48"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="XX" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="rB3-7B-S4e">
+                                        <rect key="frame" x="8" y="11" width="25" height="21"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="19"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="rB3-7B-S4e" secondAttribute="bottom" constant="16" id="1hO-km-660"/>
+                                    <constraint firstItem="CJU-Lf-lCv" firstAttribute="width" secondItem="o7b-fD-9PI" secondAttribute="width" id="Egc-dM-lCP"/>
+                                    <constraint firstItem="rB3-7B-S4e" firstAttribute="leading" secondItem="o7b-fD-9PI" secondAttribute="leading" constant="8" id="K7r-nC-Uam"/>
+                                    <constraint firstItem="CJU-Lf-lCv" firstAttribute="centerX" secondItem="o7b-fD-9PI" secondAttribute="centerX" id="KL6-sP-kzC"/>
+                                    <constraint firstAttribute="height" constant="48" id="ZvW-lZ-35J"/>
+                                    <constraint firstItem="CJU-Lf-lCv" firstAttribute="centerY" secondItem="o7b-fD-9PI" secondAttribute="centerY" id="c0R-SA-MPv"/>
+                                    <constraint firstAttribute="width" constant="48" id="jml-5B-bBq"/>
+                                    <constraint firstAttribute="trailing" secondItem="rB3-7B-S4e" secondAttribute="trailing" constant="15" id="sPz-1N-Ks4"/>
+                                    <constraint firstItem="rB3-7B-S4e" firstAttribute="top" secondItem="o7b-fD-9PI" secondAttribute="top" constant="11" id="wgL-kn-FJc"/>
+                                    <constraint firstItem="CJU-Lf-lCv" firstAttribute="height" secondItem="o7b-fD-9PI" secondAttribute="height" id="wlc-V6-VM9"/>
+                                </constraints>
+                            </view>
                             <view alpha="0.80000000000000004" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V6y-7n-0Qm">
                                 <rect key="frame" x="8" y="248" width="359" height="142"/>
                                 <subviews>
@@ -233,12 +259,14 @@
                             <constraint firstItem="RlZ-m4-emX" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" constant="8" id="BOv-mN-TUr"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="DuW-Gu-DQ3" secondAttribute="trailing" id="IVG-OM-JBt"/>
                             <constraint firstItem="fdP-mZ-nwU" firstAttribute="top" secondItem="O1u-W8-tvY" secondAttribute="top" constant="8" id="Mvg-dt-xbo"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="o7b-fD-9PI" secondAttribute="trailing" constant="8" id="NgZ-ne-MHs"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="DuW-Gu-DQ3" secondAttribute="bottom" id="OiZ-fL-u9T"/>
                             <constraint firstItem="V6y-7n-0Qm" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="8" id="QSz-ab-Fuf"/>
                             <constraint firstItem="ID6-60-cVW" firstAttribute="centerX" secondItem="O1u-W8-tvY" secondAttribute="centerX" id="XTF-Tf-idX"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="ID6-60-cVW" secondAttribute="bottom" constant="16" id="ZvD-fu-Gl0"/>
                             <constraint firstItem="RlZ-m4-emX" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" constant="8" id="dC1-q6-T1L"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="trailing" secondItem="fdP-mZ-nwU" secondAttribute="trailing" constant="8" id="djF-dP-mPW"/>
+                            <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="o7b-fD-9PI" secondAttribute="bottom" constant="8" id="iZa-yU-E23"/>
                             <constraint firstItem="O1u-W8-tvY" firstAttribute="bottom" secondItem="V6y-7n-0Qm" secondAttribute="bottom" constant="228" id="lUt-4t-N4E"/>
                             <constraint firstItem="DuW-Gu-DQ3" firstAttribute="leading" secondItem="O1u-W8-tvY" secondAttribute="leading" id="rJb-Gz-IQe"/>
                         </constraints>
@@ -258,6 +286,9 @@
                         <outlet property="postReportButton" destination="l2o-87-Qdm" id="jGM-lR-tmu"/>
                         <outlet property="previewView" destination="2eh-TS-pcI" id="3FT-ys-wbu"/>
                         <outlet property="takePictureButton" destination="lkl-DI-qfs" id="HzR-sv-me5"/>
+                        <outlet property="zoomContainerView" destination="o7b-fD-9PI" id="o9I-5m-wup"/>
+                        <outlet property="zoomFactorLabel" destination="rB3-7B-S4e" id="iOm-Bx-Vil"/>
+                        <outlet property="zoomImageView" destination="CJU-Lf-lCv" id="NaG-WO-09e"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4Nw-L8-lE0" sceneMemberID="firstResponder"/>
@@ -495,5 +526,6 @@
         <image name="map_icon" width="23" height="24"/>
         <image name="map_lane_icon" width="32" height="32"/>
         <image name="no_bike_icon" width="25" height="25"/>
+        <image name="zoom_icon" width="48" height="48"/>
     </resources>
 </document>

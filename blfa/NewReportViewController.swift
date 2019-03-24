@@ -33,6 +33,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var previewView: UIView!
     @IBOutlet weak var takePictureButton: UIButton!
+    @IBOutlet weak var zoomContainerView: UIView!
+    @IBOutlet weak var zoomImageView: UIImageView!
+    @IBOutlet weak var zoomFactorLabel: UILabel!
     
     @IBOutlet weak var controlView: UIView!
     @IBOutlet weak var controlViewToSafeAreaBottomConstraint : NSLayoutConstraint!
@@ -45,11 +48,14 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var viewModel: NewReportViewModel!
     
     // credit: https://medium.com/@rizwanm/https-medium-com-rizwanm-swift-camera-part-1-c38b8b773b2
+    var captureDevice: AVCaptureDevice?
     var captureSession: AVCaptureSession?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     var capturePhotoOutput: AVCapturePhotoOutput?
     var flashSupported: Bool = false
     var flashMode: AVCaptureDevice.FlashMode = .auto
+    var currentZoomLevel = 1
+    var maximumZoomLevel = 1
     
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
@@ -66,6 +72,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
              
                 self.gotoAppSettings()
             }
+        }
+    }
+    
+    func showControlPanel(_ show: Bool) {
+        self.previewView.isHidden = show
+        self.flashImageView.isHidden = show
+        self.zoomContainerView.isHidden = show
+        self.cameraButtonsView.isHidden = show
+        UIView.animate(withDuration: 0.25) {
+            self.controlViewToSafeAreaBottomConstraint.constant = show ? self.controlViewToSafeAreaBottomDefault : -self.controlView.frame.height
+            self.view.layoutIfNeeded()
         }
     }
     
@@ -219,12 +236,23 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         locationImageView.isUserInteractionEnabled = true
         locationImageView.addGestureRecognizer(tapper)
         
+        // set up zoom label/tap event handlers
+        zoomFactorLabel.text = "\(currentZoomLevel)x"
+        tapper = UITapGestureRecognizer(target:self, action:#selector(self.zoomButtonPressed(sender:)))
+        tapper.numberOfTouchesRequired = 1
+        zoomImageView.isUserInteractionEnabled = true
+        zoomImageView.addGestureRecognizer(tapper)
+        
         #if (!targetEnvironment(simulator))
         
             // preview image
-            let captureDevice = AVCaptureDevice.default(for: .video)
+            captureDevice = AVCaptureDevice.default(for: .video)
             if let captureDevice = captureDevice {
                 do {
+                    // set max zoom to be 4x, 2x or 1x
+                    maximumZoomLevel = (captureDevice.activeFormat.videoMaxZoomFactor >= 4) ? 4 :
+                        ((captureDevice.activeFormat.videoMaxZoomFactor >= 2) ? 2 : 1)
+                    
                     let input = try AVCaptureDeviceInput(device: captureDevice)
                     captureSession = AVCaptureSession()
                     captureSession!.addInput(input)
@@ -410,12 +438,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.descriptionTextField.resignFirstResponder()
         
         // show the preview + photo buttons, slide down the control panel
-        self.previewView.isHidden = false
-        self.cameraButtonsView.isHidden = false
-        UIView.animate(withDuration: 0.25) {
-            self.controlViewToSafeAreaBottomConstraint.constant = -self.controlView.frame.height
-            self.view.layoutIfNeeded()
-        }
+        showControlPanel(false)
         
         captureSession?.startRunning()
     }
@@ -441,7 +464,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             }
         }
     }
-
+    
     @objc func flashButtonPressed(sender: UITapGestureRecognizer?) {
         guard flashSupported else {
             return
@@ -460,6 +483,21 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
     }
     
+    @objc func zoomButtonPressed(sender: UITapGestureRecognizer?) {
+        guard let captureDevice = captureDevice, (try? captureDevice.lockForConfiguration()) != nil else {
+            return
+        }
+
+        currentZoomLevel *= 2
+        if currentZoomLevel > maximumZoomLevel {
+            currentZoomLevel = 1
+        }
+        
+        zoomFactorLabel.text = "\(currentZoomLevel)x"
+        captureDevice.videoZoomFactor = CGFloat(currentZoomLevel)
+        captureDevice.unlockForConfiguration()
+    }
+
     @IBAction func postReportButtonPressed(sender: UIButton) {
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
@@ -656,12 +694,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // update the image, hide the preview + photo buttons, slide up the control panel
         self.imageView.image = fixedImage
-        self.previewView.isHidden = true
-        self.cameraButtonsView.isHidden = true
-        UIView.animate(withDuration: 0.25) {
-            self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
-            self.view.layoutIfNeeded()
-        }
+        showControlPanel(true)
         
         // tell the model that we have an image and a location (maybe)
         self.viewModel.haveImage.value = .cameraPhoto
@@ -720,13 +753,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
 
         // update the image, hide the preview + photo buttons, slide up the control panel
         self.imageView.image = fixedImage
-        self.previewView.isHidden = true
-        self.cameraButtonsView.isHidden = true
-        UIView.animate(withDuration: 0.25) {
-            self.controlViewToSafeAreaBottomConstraint.constant = self.controlViewToSafeAreaBottomDefault
-            self.view.layoutIfNeeded()
-        }
-        
+        showControlPanel(true)
+
         // tell the model that we have an image
         self.viewModel.haveImage.value = .libraryPhoto
         self.viewModel.imageLocation.value = coordinate
