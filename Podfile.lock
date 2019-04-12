@@ -15,6 +15,7 @@ PODS:
   - ReactiveSwift (4.0.0):
     - Result (~> 4.0)
   - Result (4.0.0)
+  - Swifter (2.2.2)
 
 DEPENDENCIES:
   - AWSCore (~> 2.6.13)
@@ -26,6 +27,7 @@ DEPENDENCIES:
   - JGProgressHUD
   - Mapbox-iOS-SDK (~> 4.6)
   - ReactiveCocoa (~> 8.0)
+  - Swifter (from `https://github.com/mattdonnelly/Swifter.git`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -41,6 +43,15 @@ SPEC REPOS:
     - ReactiveSwift
     - Result
 
+EXTERNAL SOURCES:
+  Swifter:
+    :git: https://github.com/mattdonnelly/Swifter.git
+
+CHECKOUT OPTIONS:
+  Swifter:
+    :commit: 36521f98f7c1c42b080d97d46471200a5684d1c8
+    :git: https://github.com/mattdonnelly/Swifter.git
+
 SPEC CHECKSUMS:
   AWSCore: 2dab62ef2e5ca5d8c72c6cbdb3a6ea1532c27c2b
   AWSDynamoDB: f4902fc37384dcf9547e2d8a32a5b208d4d1d996
@@ -53,7 +64,8 @@ SPEC CHECKSUMS:
   ReactiveCocoa: fbd26e9ba60e98417ee47433e59465a98ed9da0f
   ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
   Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
+  Swifter: 13dd997d16b43a2948f77a5da8bd2b1c636ca495
 
-PODFILE CHECKSUM: 49a6bf6cf34bf1f674120fce6e6f24854d022b38
+PODFILE CHECKSUM: 9451592e937e3ffe66803c29b818f75be27369b3
 
 COCOAPODS: 1.5.3
