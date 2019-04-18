@@ -569,19 +569,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     addAndResetReport = true
                 }
             } else {
-                var errorDomain: String
+                var eventDomain: String
                 if AppDelegate.getMockTestEnable(for: .useMockUpload) {
-                    errorDomain = "MockNetworkManagerSuccess"
+                    eventDomain = "MockNetworkManagerSuccess"
                 } else if UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) {
-                    errorDomain = "DevNetworkManagerSuccess"
+                    eventDomain = "DevNetworkManagerSuccess"
                 } else {
-                    errorDomain = "NetworkManagerSuccess"
+                    eventDomain = "NetworkManagerSuccess"
                 }
                 
-                // report successful upload to crashlytics as non-fatal error
-                Crashlytics.sharedInstance().recordError(NSError(domain: errorDomain, code: 0,
-                                                                 userInfo: ["uploadAttempts": self.uploadAttempts]))
-                
+                // report successful upload
+                Answers.logCustomEvent(withName: eventDomain, customAttributes: ["uploadAttempts": self.uploadAttempts])
                 if self.showDebugMessages {
                     if let serviceRequestId = serviceRequestId {
                         AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
