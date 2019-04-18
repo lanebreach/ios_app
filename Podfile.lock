@@ -15,6 +15,9 @@ PODS:
   - ReactiveSwift (4.0.0):
     - Result (~> 4.0)
   - Result (4.0.0)
+  - SDWebImage (5.0.0):
+    - SDWebImage/Core (= 5.0.0)
+  - SDWebImage/Core (5.0.0)
   - Swifter (2.2.2)
 
 DEPENDENCIES:
@@ -27,6 +30,7 @@ DEPENDENCIES:
   - JGProgressHUD
   - Mapbox-iOS-SDK (~> 4.6)
   - ReactiveCocoa (~> 8.0)
+  - SDWebImage (~> 5.0)
   - Swifter (from `https://github.com/mattdonnelly/Swifter.git`)
 
 SPEC REPOS:
@@ -42,6 +46,7 @@ SPEC REPOS:
     - ReactiveCocoa
     - ReactiveSwift
     - Result
+    - SDWebImage
 
 EXTERNAL SOURCES:
   Swifter:
@@ -64,8 +69,9 @@ SPEC CHECKSUMS:
   ReactiveCocoa: fbd26e9ba60e98417ee47433e59465a98ed9da0f
   ReactiveSwift: a2bb9ace428a109e9c0209615645d9d286c8c433
   Result: 7645bb3f50c2ce726dd0ff2fa7b6f42bbe6c3713
+  SDWebImage: 5de80a0302de9e377e62f47d2fa1304efff0e55f
   Swifter: 13dd997d16b43a2948f77a5da8bd2b1c636ca495
 
-PODFILE CHECKSUM: 9451592e937e3ffe66803c29b818f75be27369b3
+PODFILE CHECKSUM: b145abde288dfa38dea37b398e542507105047f9
 
 COCOAPODS: 1.5.3

@@ -16,4 +16,5 @@ target 'blfa' do
   pod 'Fabric'
   pod 'Crashlytics'
   pod 'Swifter', :git => 'https://github.com/mattdonnelly/Swifter.git'
+  pod 'SDWebImage', '~> 5.0'
 end
