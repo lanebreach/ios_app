@@ -495,6 +495,106 @@
             </objects>
             <point key="canvasLocation" x="1437.5999999999999" y="2.2488755622188905"/>
         </scene>
+        <!--Twitter-->
+        <scene sceneID="Kec-sF-ek2">
+            <objects>
+                <viewController id="MsS-N6-ZgG" userLabel="Twitter" customClass="TwitterViewController" customModule="blfa" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="OHe-HN-CHH">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="6qk-Wq-zBG">
+                                <rect key="frame" x="0.0" y="20" width="375" height="598"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="MsS-N6-ZgG" id="75e-I9-J7U"/>
+                                    <outlet property="delegate" destination="MsS-N6-ZgG" id="yps-x5-An6"/>
+                                </connections>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="6qk-Wq-zBG" firstAttribute="top" secondItem="2OJ-Ww-gNi" secondAttribute="top" id="1t4-21-Wcc"/>
+                            <constraint firstItem="2OJ-Ww-gNi" firstAttribute="bottom" secondItem="6qk-Wq-zBG" secondAttribute="bottom" id="ChW-E1-4Ti"/>
+                            <constraint firstItem="2OJ-Ww-gNi" firstAttribute="trailing" secondItem="6qk-Wq-zBG" secondAttribute="trailing" id="XB0-7G-gcb"/>
+                            <constraint firstItem="6qk-Wq-zBG" firstAttribute="leading" secondItem="2OJ-Ww-gNi" secondAttribute="leading" id="xmL-hs-F6a"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="2OJ-Ww-gNi"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Twitter" id="27C-qY-BGX"/>
+                    <connections>
+                        <outlet property="tableView" destination="6qk-Wq-zBG" id="XBU-bW-Y3W"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TK4-V3-WQ7" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2124" y="325.18740629685158"/>
+        </scene>
+        <!--Permission View Controller-->
+        <scene sceneID="Lzm-HX-gae">
+            <objects>
+                <viewController storyboardIdentifier="PermissionViewController" id="7Fu-ZF-Gho" customClass="PermissionViewController" customModule="blfa" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="bex-li-eod">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bikelane1" translatesAutoresizingMaskIntoConstraints="NO" id="BXD-Jp-jHE">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Give me permission!" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qFT-y6-mbt">
+                                <rect key="frame" x="16" y="20" width="343" height="419"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Fe2-IE-BEJ">
+                                <rect key="frame" x="137.5" y="471" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="T1F-wX-kqk"/>
+                                    <constraint firstAttribute="height" constant="100" id="qST-eg-xPg"/>
+                                </constraints>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3Ds-Jq-cYC">
+                                <rect key="frame" x="16" y="603" width="343" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="mA0-qH-pCB"/>
+                                </constraints>
+                                <state key="normal" title="Permission button">
+                                    <color key="titleColor" cocoaTouchSystemColor="darkTextColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="permissionButtonPressed" destination="7Fu-ZF-Gho" eventType="touchUpInside" id="3tw-B4-Y80"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Fe2-IE-BEJ" firstAttribute="top" secondItem="qFT-y6-mbt" secondAttribute="bottom" constant="32" id="0y6-m1-E8I"/>
+                            <constraint firstItem="zHO-aD-tTP" firstAttribute="trailing" secondItem="qFT-y6-mbt" secondAttribute="trailing" constant="16" id="4rp-bT-StD"/>
+                            <constraint firstItem="3Ds-Jq-cYC" firstAttribute="top" secondItem="Fe2-IE-BEJ" secondAttribute="bottom" constant="32" id="7eB-yZ-YIK"/>
+                            <constraint firstItem="qFT-y6-mbt" firstAttribute="leading" secondItem="zHO-aD-tTP" secondAttribute="leading" constant="16" id="Gak-jt-7W3"/>
+                            <constraint firstItem="zHO-aD-tTP" firstAttribute="bottom" secondItem="3Ds-Jq-cYC" secondAttribute="bottom" constant="20" id="Gj5-Va-zEE"/>
+                            <constraint firstItem="qFT-y6-mbt" firstAttribute="top" secondItem="zHO-aD-tTP" secondAttribute="top" id="MFt-In-q5j"/>
+                            <constraint firstItem="3Ds-Jq-cYC" firstAttribute="leading" secondItem="zHO-aD-tTP" secondAttribute="leading" constant="16" id="NPY-yA-wON"/>
+                            <constraint firstItem="zHO-aD-tTP" firstAttribute="top" secondItem="BXD-Jp-jHE" secondAttribute="top" constant="20" id="QhW-M9-y3R"/>
+                            <constraint firstItem="zHO-aD-tTP" firstAttribute="trailing" secondItem="3Ds-Jq-cYC" secondAttribute="trailing" constant="16" id="VFj-EA-ict"/>
+                            <constraint firstItem="Fe2-IE-BEJ" firstAttribute="centerX" secondItem="zHO-aD-tTP" secondAttribute="centerX" id="cPK-LT-R4D"/>
+                            <constraint firstItem="zHO-aD-tTP" firstAttribute="bottom" secondItem="BXD-Jp-jHE" secondAttribute="bottom" id="lSw-mG-re4"/>
+                            <constraint firstItem="BXD-Jp-jHE" firstAttribute="leading" secondItem="zHO-aD-tTP" secondAttribute="leading" id="sE5-UU-mWx"/>
+                            <constraint firstItem="zHO-aD-tTP" firstAttribute="trailing" secondItem="BXD-Jp-jHE" secondAttribute="trailing" id="xCz-Vc-4R8"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="zHO-aD-tTP"/>
+                    </view>
+                    <connections>
+                        <outlet property="permissionButton" destination="3Ds-Jq-cYC" id="ymW-ky-Oy4"/>
+                        <outlet property="permissionImageView" destination="Fe2-IE-BEJ" id="0MO-JN-oIN"/>
+                        <outlet property="permissionLabel" destination="qFT-y6-mbt" id="iip-3Y-Zk7"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="GIT-Pd-Pn9" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2144.8000000000002" y="-474.51274362818594"/>
+        </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="yl2-sM-qoP">
             <objects>
@@ -507,7 +607,8 @@
                     <connections>
                         <segue destination="8rJ-Kc-sve" kind="relationship" relationship="viewControllers" id="lzU-1b-eKA"/>
                         <segue destination="9pv-A4-QxB" kind="relationship" relationship="viewControllers" id="O18-M6-lFI"/>
-                        <segue destination="b0a-le-tlm" kind="relationship" relationship="viewControllers" id="9zl-w5-SLP"/>
+                        <segue destination="MsS-N6-ZgG" kind="relationship" relationship="viewControllers" id="Kag-a1-mVA"/>
+                        <segue destination="b0a-le-tlm" kind="relationship" relationship="viewControllers" id="Dg2-Pa-1yr"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HuB-VB-40B" sceneMemberID="firstResponder"/>

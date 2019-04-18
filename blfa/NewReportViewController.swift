@@ -65,13 +65,78 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var uploadAttempts = 0
     
     //MARK:- Internal methods
-    func requestAuthorizationHandler(status: PHAuthorizationStatus) {
-        if status != PHAuthorizationStatus.authorized {
-            AppDelegate.showSimpleAlertWithOK(vc: self, "Please check to see if your device settings allows photo library access - this is needed to get the location from your photos when uploading a library image and to save pictures that you take to your camera roll.",
-                                              button2title: "Settings") { (_) in
-             
-                self.gotoAppSettings()
+    func enableCamera() {
+        #if (!targetEnvironment(simulator))
+        
+        guard captureDevice == nil else {
+            return
+        }
+        
+        // preview image
+        captureDevice = AVCaptureDevice.default(for: .video)
+        if let captureDevice = captureDevice {
+            do {
+                // set max zoom to be 4x, 2x or 1x
+                maximumZoomLevel = (captureDevice.activeFormat.videoMaxZoomFactor >= 4) ? 4 :
+                    ((captureDevice.activeFormat.videoMaxZoomFactor >= 2) ? 2 : 1)
+                
+                let input = try AVCaptureDeviceInput(device: captureDevice)
+                captureSession = AVCaptureSession()
+                captureSession!.addInput(input)
+                
+                videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession!)
+                videoPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
+                videoPreviewLayer?.frame = view.layer.bounds
+                previewView.layer.addSublayer(videoPreviewLayer!)
+                
+                // Get an instance of ACCapturePhotoOutput class
+                capturePhotoOutput = AVCapturePhotoOutput()
+                
+                // Set the output on the capture session
+                if let capturePhotoOutput = capturePhotoOutput {
+                    capturePhotoOutput.isHighResolutionCaptureEnabled = true
+                    
+                    captureSession!.addOutput(capturePhotoOutput)
+                    captureSession!.startRunning()
+                    
+                    // allow changing flash modes if we support off/on/auto (must check after adding to captureSession)
+                    if capturePhotoOutput.supportedFlashModes.count == 3 {
+                        flashSupported = true
+                    } else {
+                        flashSupported = false
+                    }
+                } else {
+                    if showDebugMessages {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: AVCapturePhotoOutput() failed")
+                    } else {
+                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
+                    }
+                    Crashlytics.sharedInstance().recordError(NSError(domain: "AVCapturePhotoOutput error", code: 0, userInfo: nil))
+                }
+            } catch {
+                if showDebugMessages {
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: capture setup error: \(error)")
+                } else {
+                    AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
+                }
+                
+                Crashlytics.sharedInstance().recordError(NSError(domain: "AVCaptureDeviceInput error", code: 0,
+                                                                 userInfo: ["error": error.localizedDescription]))
             }
+        }
+        
+        #endif
+        
+        if flashSupported {
+            // set up flash icon/tap event handlers - start with off (flashButtonPressed will toggle from .on --> .off)
+            flashMode = .on
+            flashButtonPressed(sender: nil)
+            let tapper = UITapGestureRecognizer(target:self, action:#selector(self.flashButtonPressed(sender:)))
+            tapper.numberOfTouchesRequired = 1
+            flashImageView.isUserInteractionEnabled = true
+            flashImageView.addGestureRecognizer(tapper)
+        } else {
+            flashImageView.image = nil
         }
     }
     
@@ -120,13 +185,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         return preferences
     }
     
-    func gotoAppSettings() {
-        let settingsUrl = NSURL(string:UIApplicationOpenSettingsURLString)
-        if let url = settingsUrl {
-            UIApplication.shared.open(url as URL, options: [:], completionHandler: nil)
-        }
-    }
-    
     func updateLocationIcon(found: Bool) {
         self.locationImageView.image = UIImage(named: found ? "ic_location_black" : "ic_location_bad_black")
     }
@@ -136,18 +194,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         currentLocation = nil
         updateLocationIcon(found: false)
         
-        if CLLocationManager.locationServicesEnabled() == true {
-            if CLLocationManager.authorizationStatus() == .restricted || CLLocationManager.authorizationStatus() == .denied ||  CLLocationManager.authorizationStatus() == .notDetermined {
-                self.locationManager.requestWhenInUseAuthorization()
-            }
-            self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
-            self.locationManager.delegate = self
-            self.locationManager.startUpdatingLocation()
-        } else {
-            if showAlertOnError {
-                AppDelegate.showSimpleAlertWithOK(vc: self, "Please turn on location services to post a new report")
-            }
-        }
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        self.locationManager.delegate = self
+        self.locationManager.startUpdatingLocation()
     }
     
     func locationIsInSanFrancisco(_ location: CLLocationCoordinate2D) -> Bool {
@@ -175,11 +224,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // this is the first screen that is shown, so let's update the tab bar style here
         NetworkManager.shared.updateTabBarStyleForCurrentServer(vc: self)
         
-        // ask the user to access the photo library so we can get the location from photos
-        if PHPhotoLibrary.authorizationStatus() != PHAuthorizationStatus.authorized {
-            PHPhotoLibrary.requestAuthorization(requestAuthorizationHandler)
-        }
-
         // model
         viewModel = NewReportViewModel()
         
@@ -243,74 +287,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         zoomImageView.isUserInteractionEnabled = true
         zoomImageView.addGestureRecognizer(tapper)
         
-        #if (!targetEnvironment(simulator))
-        
-            // preview image
-            captureDevice = AVCaptureDevice.default(for: .video)
-            if let captureDevice = captureDevice {
-                do {
-                    // set max zoom to be 4x, 2x or 1x
-                    maximumZoomLevel = (captureDevice.activeFormat.videoMaxZoomFactor >= 4) ? 4 :
-                        ((captureDevice.activeFormat.videoMaxZoomFactor >= 2) ? 2 : 1)
-                    
-                    let input = try AVCaptureDeviceInput(device: captureDevice)
-                    captureSession = AVCaptureSession()
-                    captureSession!.addInput(input)
-                    
-                    videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession!)
-                    videoPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-                    videoPreviewLayer?.frame = view.layer.bounds
-                    previewView.layer.addSublayer(videoPreviewLayer!)
-                    
-                    // Get an instance of ACCapturePhotoOutput class
-                    capturePhotoOutput = AVCapturePhotoOutput()
-                    
-                    // Set the output on the capture session
-                    if let capturePhotoOutput = capturePhotoOutput {
-                        capturePhotoOutput.isHighResolutionCaptureEnabled = true
-
-                        captureSession!.addOutput(capturePhotoOutput)
-                        captureSession!.startRunning()
-
-                        // allow changing flash modes if we support off/on/auto (must check after adding to captureSession)
-                        if capturePhotoOutput.supportedFlashModes.count == 3 {
-                            flashSupported = true
-                        } else {
-                            flashSupported = false
-                        }
-                    } else {
-                        if showDebugMessages {
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: AVCapturePhotoOutput() failed")
-                        } else {
-                            AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
-                        }
-                        Crashlytics.sharedInstance().recordError(NSError(domain: "AVCapturePhotoOutput error", code: 0, userInfo: nil))
-                    }
-                } catch {
-                    if showDebugMessages {
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: capture setup error: \(error)")
-                    } else {
-                        AppDelegate.showSimpleAlertWithOK(vc: self, "ERROR: could not enable your phone's camera")
-                    }
-                    Crashlytics.sharedInstance().recordError(NSError(domain: "AVCaptureDeviceInput error", code: 0,
-                                                                     userInfo: ["error": error.localizedDescription]))
-                }
-            }
-        
-        #endif
-        
-        if flashSupported {
-            // set up flash icon/tap event handlers - start with off (flashButtonPressed will toggle from .on --> .off)
-            flashMode = .on
-            flashButtonPressed(sender: nil)
-            tapper = UITapGestureRecognizer(target:self, action:#selector(self.flashButtonPressed(sender:)))
-            tapper.numberOfTouchesRequired = 1
-            flashImageView.isUserInteractionEnabled = true
-            flashImageView.addGestureRecognizer(tapper)
-        } else {
-            flashImageView.image = nil
-        }
-
         super.viewDidLoad()
     }
     
@@ -322,10 +298,25 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         self.locationManager.stopUpdatingLocation()
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if !PermissionViewController.needOneOrMorePermissions() {
+            enableCamera()
+        }
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         // TODO - also make sure that this handles app foregrounding
+
+        if PermissionViewController.needOneOrMorePermissions() {
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let controller = storyboard.instantiateViewController(withIdentifier: "PermissionViewController")
+            self.present(controller, animated: true, completion: nil)
+            return
+        }
         
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(NewReportViewController.keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
@@ -459,8 +450,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         } else {
             AppDelegate.showSimpleAlertWithOK(vc: self, "Cannot determine your location - make sure that Location Services are enabled for this app in Settings.",
                                               button2title: "Settings") { (_) in
-                                                
-                self.gotoAppSettings()
+                    
+                AppDelegate.gotoAppSettings()
             }
         }
     }
@@ -648,8 +639,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // show location error
-        locationButtonPressed(sender: nil)
+        print("location error: \(error)")
     }
     
     //MARK:- AVCapturePhotoCaptureDelegate methods
@@ -737,8 +727,8 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             let coordinate = phAsset.location?.coordinate else {
                 AppDelegate.showSimpleAlertWithOK(vc: self, "The selected photo does not have location information or this app does not have access to your Photo Library.",
                                                   button2title: "Settings") { (_) in
-                                                    
-                    self.gotoAppSettings()
+                         
+                    AppDelegate.gotoAppSettings()
                 }
 
                 return
