@@ -34,6 +34,12 @@ enum MockTestSetting {
     case showTwinPeaks
 }
 
+enum BrandColorPurpose {
+    case common
+    case hints
+    case feedItems
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
@@ -166,5 +172,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UserDefaults.standard.set(false, forKey: kUserDefaultsHideTipNewReportMain)
         UserDefaults.standard.set(false, forKey: kUserDefaultsHideTipNewReportLocation)
         UserDefaults.standard.set(false, forKey: kUserDefaultsHideTipNewReportFlash)
+    }
+    
+    class func brandColor(purpose: BrandColorPurpose) -> UIColor {
+        switch purpose {
+        case .common, .hints:
+            return UIColor(red: 0x17/255.0, green: 0x98/255.0, blue: 0x76/255.0, alpha: 1.0)
+        case .feedItems:
+            return UIColor(red: 0xda/255.0, green: 0xef/255.0, blue: 0xe9/255.0, alpha: 1.0)
+        }
     }
 }
