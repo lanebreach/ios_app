@@ -35,9 +35,9 @@ enum MockTestSetting {
 }
 
 enum BrandColorPurpose {
-    case common
-    case hints
-    case feedItems
+    case main
+    case lightMain
+    case communityFeedItems
 }
 
 @UIApplicationMain
@@ -176,10 +176,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     class func brandColor(purpose: BrandColorPurpose) -> UIColor {
         switch purpose {
-        case .common, .hints:
-            return UIColor(red: 0x17/255.0, green: 0x98/255.0, blue: 0x76/255.0, alpha: 1.0)
-        case .feedItems:
-            return UIColor(red: 0xda/255.0, green: 0xef/255.0, blue: 0xe9/255.0, alpha: 1.0)
+        case .main:
+            return UIColor.fromHex(hex: 0x179876)
+        case .lightMain:
+            return UIColor.fromHex(hex: 0xdaefe9)
+        case .communityFeedItems:
+            return UIColor.fromHex(hex: 0x5a5b5d)
         }
+    }
+}
+
+extension UIColor {
+    class func fromHex(hex: UInt32) -> UIColor {
+        return UIColor(red: CGFloat(hex >> 16)/255.0,
+                       green: CGFloat((hex >> 8) & 0xFF)/255.0,
+                       blue: CGFloat(hex & 0xFF)/255.0, alpha: 1.0)
     }
 }

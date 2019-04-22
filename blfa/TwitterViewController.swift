@@ -16,9 +16,12 @@ class TweetCell: UITableViewCell {
     @IBOutlet weak var iconView: UIImageView!
     @IBOutlet weak var label1: UILabel!
     @IBOutlet weak var label2: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
 }
 
 class TwitterViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    @IBOutlet weak var laneBreachIconView: UIView!
+    @IBOutlet weak var communityIconView: UIView!
     @IBOutlet weak var tableView: UITableView!
     
     let cellReuseIdentifier = "TweetCell"
@@ -27,17 +30,29 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                           consumerSecret: Keys.twitterConsumerSecret,
                           oauthToken: Keys.twitterOauthToken,
                           oauthTokenSecret: Keys.twitterOauthTokenSecret)
+    let threeOneOneDateFormatter = DateFormatter()
+    let friendlyDateFormatter = DateFormatter()
+    var boldHelveticaFontDescriptor: UIFontDescriptor?
 
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(self.handleRefresh(_:)), for: UIControlEvents.valueChanged)
-        refreshControl.tintColor = AppDelegate.brandColor(purpose: .common)
+        refreshControl.tintColor = AppDelegate.brandColor(purpose: .lightMain)
         
         return refreshControl
     }()
     
     override func viewDidLoad() {
+        threeOneOneDateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"     // ex: 2019-04-19 07:21:53
+        friendlyDateFormatter.dateFormat = "MMM d - h:mm a"               // ex: Apr 21 8:59 PM
+
+        laneBreachIconView.backgroundColor = AppDelegate.brandColor(purpose: .main)
+        communityIconView.backgroundColor = AppDelegate.brandColor(purpose: .communityFeedItems)
+        
         tableView.addSubview(self.refreshControl)
+        tableView.backgroundColor = AppDelegate.brandColor(purpose: .communityFeedItems)
+        tableView.separatorStyle = .none
+        
         refreshTweets()
     }
     
@@ -55,6 +70,15 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
         }
         
         return attributedString.string
+    }
+    
+    func friendlyTimeFormat(duration: TimeInterval) -> String? {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.unitsStyle = .abbreviated
+        formatter.maximumUnitCount = 1
+        
+        return formatter.string(from: duration)
     }
     
     func refreshTweets() {
@@ -82,6 +106,44 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
         return tweets.count
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard let tweets = tweets else {
+            return 0
+        }
+        
+        let text = tweets[indexPath.row]["full_text"].string
+        
+        if let text = text {
+            // get the description text out of the report. It will start with "https://" if there is no description.
+            let regex = try! NSRegularExpression(pattern: "\n\n.*\n")
+            if let match = regex.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) {
+                let start = text.index(text.startIndex, offsetBy: match.range.location + 2 /* exclude \n\n */)
+                let end = text.index(text.startIndex, offsetBy: match.range.location + match.range.length - 1 /* exclude \n */)
+
+                var description = decodeHtml(htmlEncodedString: String(text[start..<end]))
+                if description!.starts(with: "https://") {
+                    description = nil
+                }
+                
+                // calculate height using a dummy label (exclude icon and 3 5pt spacers)
+                let label: UILabel = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.frame.width - (60 + 5*3),
+                                                           height: CGFloat.greatestFiniteMagnitude))
+                label.numberOfLines = 0
+                label.lineBreakMode = NSLineBreakMode.byWordWrapping
+                label.font = UIFont.init(name: "Helvetica Neue", size: 15.0)
+                label.text = description
+                label.sizeToFit()
+                
+//                print("text: \(label.text), height: \(label.frame.height)")
+                // these magic numbers are the min height of the cell with just the image and
+                // the height of the cell with the top label and spacers + the height of the description
+                return max(70, 55 + label.frame.height)
+            }
+        }
+        
+        return 70
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let tweets = tweets, let cell = self.tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier) as? TweetCell else {
             return UITableViewCell()
@@ -93,7 +155,9 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
         var location: String?
         var description: String?
         var date: String?
+        var dateDelta: TimeInterval?
         var laneBreachSubmission: Bool = false
+        
         if let text = text {
             // get the location text out of the report
             var regex = try! NSRegularExpression(pattern: ".*\n\n")
@@ -101,7 +165,8 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                 let start = text.index(text.startIndex, offsetBy: 0)
                 let end = text.index(text.startIndex, offsetBy: match.range.length - 2 /* exclude \n\n */)
                 
-                location = decodeHtml(htmlEncodedString: String(text[start..<end]))
+                // note: we remove "Intersection of" to make the string shorter to fit better on smaller phones
+                location = decodeHtml(htmlEncodedString: String(text[start..<end]))?.replacingOccurrences(of: "Intersection of ", with: "")
             }
             
             // get the description text out of the report. It will start with "https://" if there is no description.
@@ -135,6 +200,15 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                 let end = text.index(text.startIndex, offsetBy: match.range.location + match.range.length)
                 
                 date = String(text[start..<end])
+                if date != nil {
+                    if let dateObject = threeOneOneDateFormatter.date(from: date!) {
+                        // get time delta
+                        dateDelta = dateObject.timeIntervalSinceNow
+                        
+                        // reformat date
+                        date = friendlyDateFormatter.string(from: dateObject)
+                    }
+                }
             }
         }
 
@@ -145,21 +219,44 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
 //        print(">>>description: '\(description ?? "nil")'")
 //        print(">>>date: '\(date ?? "nil")'")
 
-        cell.label1.text = (date ?? "Unknown date") + "\n" + (location ?? "Unknown Location")
+        // make the location bold
+        let dateAndLocation = (date ?? "Unknown date") + "\n" + (location ?? "Unknown Location")
+        let range = (dateAndLocation as NSString).range(of: location ?? "Unknown Location")
+        let dateAndLocationAttributedString = NSMutableAttributedString(string: dateAndLocation)
+        
+        if boldHelveticaFontDescriptor == nil {
+            // cache bold descriptor for location
+            boldHelveticaFontDescriptor = cell.label1.font?.fontDescriptor.withSymbolicTraits(UIFontDescriptorSymbolicTraits.traitBold)
+        }
+        
+        if let boldHelveticaFontDescriptor = boldHelveticaFontDescriptor  {
+            dateAndLocationAttributedString.addAttribute(NSAttributedStringKey.font,
+                                                         value: UIFont(descriptor: boldHelveticaFontDescriptor, size: cell.label1.font.pointSize),
+                                                         range: range)
+        }
+
+        cell.label1.attributedText = dateAndLocationAttributedString
         cell.label2.text = description ?? ""
         if laneBreachSubmission {
-            cell.backgroundColor = AppDelegate.brandColor(purpose: .feedItems)
+            cell.backgroundColor = AppDelegate.brandColor(purpose: .main)
         } else {
-            cell.backgroundColor = UIColor.white
+            cell.backgroundColor = AppDelegate.brandColor(purpose: .communityFeedItems)
+        }
+        
+        if let dateDelta = dateDelta, dateDelta < 0, let friendlyTimeDelta = friendlyTimeFormat(duration: -dateDelta) {
+            cell.dateLabel.text = friendlyTimeDelta
+        } else {
+            cell.dateLabel.text = ""
         }
 
         if let mediaUrl = tweets[indexPath.row]["entities"]["media"][0]["media_url_https"].string {
             cell.iconView.sd_setImage(with: URL(string: mediaUrl), placeholderImage: UIImage(named: "no_bike_icon"), completed: nil)
             cell.iconView.contentMode = .scaleAspectFill
         } else {
-            cell.iconView.image = nil
+            cell.iconView.image = UIImage(named: "no_bike_icon")
         }
-        
+        cell.iconView.layer.cornerRadius = 10
+
         return cell
     }
     

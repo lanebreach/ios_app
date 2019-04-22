@@ -178,7 +178,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         var preferences = EasyTipView.Preferences()
         preferences.drawing.font = UIFont(name: "Futura-Medium", size: 15)!
         preferences.drawing.foregroundColor = UIColor.white
-        preferences.drawing.backgroundColor = AppDelegate.brandColor(purpose: .hints)
+        preferences.drawing.backgroundColor = AppDelegate.brandColor(purpose: .main)
         preferences.drawing.arrowHeight = verticalOffset
         preferences.drawing.arrowPosition = arrowPosition
         
