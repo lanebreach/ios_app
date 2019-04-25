@@ -73,8 +73,73 @@ class ReportManager {
     func getReports() -> [[String: Any]]? {
         return UserDefaults.standard.array(forKey: "reports") as? [[String: Any]]
     }
-    
+
     func clearReports() {
         return UserDefaults.standard.removeObject(forKey: "reports")
+    }
+    
+    // convert tokens to service request IDs if possible
+    func finalizeReportsIfNecessary(completion: @escaping () -> Void) {
+        guard let reports = getReports() else {
+            completion()
+            return
+        }
+        
+        // save for testing only:
+        // UserDefaults.standard.set(reports, forKey: "savereports")
+        
+        var pendingWork = false
+        var updateReports = false
+        var updatedReports = [[String: Any]]()
+        let dispatchGroup = DispatchGroup()
+        for var report in reports {
+            guard report["serviceRequestId"] == nil, let token = report["token"] as? String else {
+                // nothing else to do if we already have a serviceRequestId or don't have a token
+                updatedReports.append(report)
+                continue
+            }
+        
+            pendingWork = true
+            dispatchGroup.enter()
+            print("trying to convert token \(token)")
+            NetworkManager.shared.getServiceRequestId(from: token) { (id, error) in
+                dispatchGroup.leave()
+                
+                if let id = id {
+                    // got it!
+                    print("converted token \(token) to serviceRequestId \(id)")
+                    report["serviceRequestId"] = id
+                    updatedReports.append(report)
+                    updateReports = true
+                } else if let date = report["date"] as? NSDate, let error = error as? NetworkManagerError {
+                    print("converting token \(token) failed with error \(error)")
+                    if (date.timeIntervalSinceNow < -3600) &&
+                        (error.kind == .missingServiceRequestId || (error.kind == .networkBadHTTPStatus && error.code == 404)) {
+                        
+                        // report is over an hour old and we just got a permanent error - so give up
+                        report["serviceRequestId"] = "unknown"
+                        updatedReports.append(report)
+                        updateReports = true
+                    }
+                }
+            }
+        }
+        
+        if pendingWork {
+            // wait until all requests are done (successfully or not)
+            print("waiting for token conversion requests")
+            dispatchGroup.notify(queue: .main) {
+                print("done waiting for token conversion requests")
+                if updateReports {
+                    print("updatedReports: \(updatedReports)")
+                    
+                    UserDefaults.standard.set(updatedReports, forKey: "reports")
+                }
+
+                completion()
+            }
+        } else {
+            completion()
+        }
     }
 }

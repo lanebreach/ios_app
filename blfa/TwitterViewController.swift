@@ -33,6 +33,8 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
     let threeOneOneDateFormatter = DateFormatter()
     let friendlyDateFormatter = DateFormatter()
     var boldHelveticaFontDescriptor: UIFontDescriptor?
+    var refreshingTweets = false
+    var currentUserReports: Set<String> = []
 
     lazy var refreshControl: UIRefreshControl = {
         let refreshControl = UIRefreshControl()
@@ -43,6 +45,8 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
     }()
     
     override func viewDidLoad() {
+        super.viewDidLoad()
+        
         threeOneOneDateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"     // ex: 2019-04-19 07:21:53
         friendlyDateFormatter.dateFormat = "MMM d - h:mm a"               // ex: Apr 21 8:59 PM
 
@@ -54,6 +58,29 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.separatorStyle = .none
         
         refreshTweets()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // want to highlight the current user's reports
+        ReportManager.shared.finalizeReportsIfNecessary {
+            if let reports = ReportManager.shared.getReports() {
+                var needRefresh = false
+                for report in reports {
+                    if let serviceRequestId = report["serviceRequestId"] as? String {
+                        if !self.currentUserReports.contains(serviceRequestId) {
+                            self.currentUserReports.insert(serviceRequestId)
+                            needRefresh = true
+                        }
+                    }
+                }
+                
+                if needRefresh {
+                    self.refreshTweets()
+                }
+            }
+        }
     }
     
     //MARK:- Internal methods
@@ -82,14 +109,22 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
     }
     
     func refreshTweets() {
+        guard !refreshingTweets else {
+            return
+        }
+        
+        refreshingTweets = true
+        
         // extended mode is needed to get the full_text field (otherwise text is a truncated version of it)
         let parameters = ["tweet_mode": "extended"]
         swifter.getTimeline(for: "1010780550687100929" /* EverySF311Bike */, customParam: parameters, count:100, trimUser: true, success: { json in
             self.tweets = json.array
             self.tableView.reloadData()
             self.refreshControl.endRefreshing()
+            self.refreshingTweets = false
         }, failure: { error in
             print("error \(error)")
+            self.refreshingTweets = false
         })
     }
     
@@ -169,7 +204,8 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                 location = decodeHtml(htmlEncodedString: String(text[start..<end]))?.replacingOccurrences(of: "Intersection of ", with: "")
             }
             
-            // get the description text out of the report. It will start with "https://" if there is no description.
+            // get the description text out of the report.
+            // It will start with "https://", "Make/Model:", "License Plate:", or "Color:" if there is no description.
             regex = try! NSRegularExpression(pattern: "\n\n.*\n")
             if let match = regex.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) {
                 let start = text.index(text.startIndex, offsetBy: match.range.location + 2 /* exclude \n\n */)
@@ -177,10 +213,12 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                 
                 description = decodeHtml(htmlEncodedString: String(text[start..<end]))
                 if description != nil {
-                    if description!.starts(with: "https://") {
+                    if description!.starts(with: "https://") || description!.starts(with: "Make/Model:") ||
+                        description!.starts(with: "License Plate:") || description!.starts(with: "Color:") {
+                        
                         description = nil
                     } else {
-                        // now check for lane breach description
+                        // now check for lane breach description: "Blocked bicycle lane" or "[Category] ..."
                         if description == "Blocked bicycle lane" {
                             laneBreachSubmission = true
                         } else {
@@ -234,9 +272,27 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                                                          value: UIFont(descriptor: boldHelveticaFontDescriptor, size: cell.label1.font.pointSize),
                                                          range: range)
         }
-
+        
         cell.label1.attributedText = dateAndLocationAttributedString
-        cell.label2.text = description ?? ""
+        
+        // figure out if this report belongs to the current user
+        // the last part of the url is the serviceRequestId (https://mobile311.sfgov.org/reports/10774119)
+        var currentUserReport = false
+        if let threeOneOneUrl = tweets[indexPath.row]["entities"]["urls"][0]["expanded_url"].string {
+            let urlComponentsArray = threeOneOneUrl.components(separatedBy: "/")
+            if let serviceRequestId = urlComponentsArray.last {
+                if self.currentUserReports.contains(serviceRequestId) {
+                    currentUserReport = true
+                }
+            }
+        }
+        
+        if let description = description {
+            cell.label2.text = currentUserReport ? "⭐ \(description)" : description
+        } else {
+            cell.label2.text = ""
+        }
+        
         if laneBreachSubmission {
             cell.backgroundColor = AppDelegate.brandColor(purpose: .main)
         } else {
@@ -255,6 +311,7 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
         } else {
             cell.iconView.image = UIImage(named: "no_bike_icon")
         }
+        
         cell.iconView.layer.cornerRadius = 10
 
         return cell
