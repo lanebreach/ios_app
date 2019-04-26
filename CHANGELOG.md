@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.1.0 (1)
+- permissions screen: new screen that replaces random permission popups during app launch and makes it easier (in theory) to recover from a revoked permission while the app is running
+- new report screen: added 1/2/4X zoom function; added white shadows to black icons so they're easier to see at night; hide cursor on text field when category picker is showing; moved Other to the top of the list.
+- twitter screen: new screen that shows @EverySF311Bike's feed with the user's reports marked with a star
+- always prepend [Other] before submitted descriptions if a category is not picked
+- switch to custom Fabric events to report successful report delivery to 311
+
 ## 1.0.0 (12)
 - change deployment target to iOS 11 (from 11.4)
 - new report screen - don't allow changing the flash mode if the device doesn't support it otherwise start with the flash off; (grudgingly) accept the 3rd location if our accuracy requirement isn't met as long as it's 100m or better.
