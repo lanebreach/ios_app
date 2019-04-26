@@ -35,9 +35,9 @@ class NewReportViewModel {
     var okToSendSignal: Signal<Bool, NoError>
     var locationStatusSignal: Signal<Bool, NoError>
     
-    let categories: [String] = ["Private vehicle", "Delivery truck", "Moving truck", "FedEx", "UPS", "USPS", "Bus",
-                                "Commuter Shuttle", "Uber", "Lyft", "Uber/Lyft",
-                                defaultCategory]    //  TODO/FUTURE - let user enter optional text to replace "other"?
+    //  TODO/FUTURE - let user enter optional text to replace "other"?
+    let categories: [String] = [defaultCategory, "Private vehicle", "Delivery truck", "Moving truck", "FedEx", "UPS", "USPS", "Bus",
+                                "Commuter Shuttle", "Uber", "Lyft", "Uber/Lyft"]
     
     init() {
         self.emailAddress = MutableProperty(nil)

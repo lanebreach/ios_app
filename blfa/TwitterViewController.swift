@@ -63,24 +63,7 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // want to highlight the current user's reports
-        ReportManager.shared.finalizeReportsIfNecessary {
-            if let reports = ReportManager.shared.getReports() {
-                var needRefresh = false
-                for report in reports {
-                    if let serviceRequestId = report["serviceRequestId"] as? String {
-                        if !self.currentUserReports.contains(serviceRequestId) {
-                            self.currentUserReports.insert(serviceRequestId)
-                            needRefresh = true
-                        }
-                    }
-                }
-                
-                if needRefresh {
-                    self.refreshTweets()
-                }
-            }
-        }
+        updateUserReportsAndRefreshTweets(forceRefresh: false)
     }
     
     //MARK:- Internal methods
@@ -127,9 +110,30 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
             self.refreshingTweets = false
         })
     }
+
+    func updateUserReportsAndRefreshTweets(forceRefresh: Bool) {
+        // want to highlight the current user's reports - so we need to finalize them if we can
+        ReportManager.shared.finalizeReportsIfNecessary {
+            var needRefresh = forceRefresh
+            if let reports = ReportManager.shared.getReports() {
+                for report in reports {
+                    if let serviceRequestId = report["serviceRequestId"] as? String {
+                        if !self.currentUserReports.contains(serviceRequestId) {
+                            self.currentUserReports.insert(serviceRequestId)
+                            needRefresh = true
+                        }
+                    }
+                }
+            } // else user has no reports
+            
+            if needRefresh {
+                self.refreshTweets()
+            }
+        }
+    }
     
     @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
-        refreshTweets()
+        updateUserReportsAndRefreshTweets(forceRefresh: true)
     }
     
     //MARK:- UITableViewDataSource/Delegate

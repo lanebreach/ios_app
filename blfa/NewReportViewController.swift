@@ -258,6 +258,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         picker.delegate = self
         picker.showsSelectionIndicator = true
         self.categoryTextField.inputView = picker
+        self.categoryTextField.tintColor = .clear   // hides the cursor
         
         let toolBar = UIToolbar()
         toolBar.barStyle = UIBarStyle.default
@@ -768,11 +769,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     @objc func donePicker(_ sender: Any) {
-        if let picker = self.categoryTextField.inputView as? UIPickerView {
-            // update the category even if the user didn't change the value (only applies when "Other" is initially selected)
-            self.viewModel.category.value = self.viewModel.categories[picker.selectedRow(inComponent: 0)]
-        }
-        
+        print("selected category: \(self.viewModel.category.value)")        
         self.categoryTextField.resignFirstResponder()
     }
 

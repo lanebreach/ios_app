@@ -268,9 +268,8 @@ class NetworkManager {
             // TODO - send the mediaUrl from uploadImage()
             let mediaUrl = "https://s3-us-west-1.amazonaws.com/lane-breach/311-sf/temp-images/\(filename).png"
             
-            // concatenate category (if not "Other") with optional description when POSTing (ex: [category] <description>)
-            var fullDescription: String = ((category != NewReportViewModel.defaultCategory) && (category.count != 0)) ?
-                "[\(category)] " : ""
+            // concatenate category with optional description when POSTing (ex: [category] <description>)
+            var fullDescription: String = "[\(category)] "
             fullDescription.append(contentsOf: (description.count) != 0 ? description : "Blocked bicycle lane")
             
             var parameters = [
