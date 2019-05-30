@@ -143,6 +143,10 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         return true
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
+    }
+    
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         switch textField {
         case emailTextField:
