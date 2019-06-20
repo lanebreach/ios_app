@@ -57,6 +57,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     var currentZoomLevel = 1
     var maximumZoomLevel = 1
     
+    lazy var categoryPicker = UIPickerView()
     var locationManager = CLLocationManager()
     var hud: JGProgressHUD?
     var tipViews: [TipIdentifier:EasyTipView] = [:]
@@ -240,6 +241,17 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         }
         
         self.postReportButton.reactive.isEnabled <~ self.viewModel.okToSendSignal
+        self.viewModel.categorySignal.observeValues { (value) in
+            // make sure that the picker is in sync with the category
+            // (this really only happens when the viewModel is reset)
+            if let index = self.viewModel.categories.firstIndex(of: value),
+                index < self.categoryPicker.numberOfRows(inComponent: 0) {
+                
+                if self.categoryPicker.selectedRow(inComponent: 0) != index {
+                    self.categoryPicker.selectRow(index, inComponent: 0, animated: false)
+                }
+            }
+        }
         
         // can't take pics using the sim
         #if (targetEnvironment(simulator))
@@ -253,11 +265,10 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.descriptionTextField.delegate = self
         
         // category picker/toolbar
-        let picker = UIPickerView.init()
-        picker.dataSource = self
-        picker.delegate = self
-        picker.showsSelectionIndicator = true
-        self.categoryTextField.inputView = picker
+        categoryPicker.dataSource = self
+        categoryPicker.delegate = self
+        categoryPicker.showsSelectionIndicator = true
+        self.categoryTextField.inputView = categoryPicker
         self.categoryTextField.tintColor = .clear   // hides the cursor
         
         let toolBar = UIToolbar()
