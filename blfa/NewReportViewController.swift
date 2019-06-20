@@ -769,24 +769,19 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     @objc func donePicker(_ sender: Any) {
-        print("selected category: \(self.viewModel.category.value)")        
+        print("selected category: \(self.viewModel.category.value)")
         self.categoryTextField.resignFirstResponder()
     }
 
     //MARK:- UITextFieldDelegate
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        // update the description AFTER we return
-        DispatchQueue.main.async {
-            self.viewModel.description.value = textField.text ?? ""
-        }
-        
-        return true
-    }
-
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         
         return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        self.viewModel.description.value = textField.text ?? ""
     }
     
     //MARK:- EasyTipViewDelegate
