@@ -17,6 +17,7 @@ import ReactiveCocoa
 import ReactiveSwift
 import Result
 import UIKit
+import UserNotifications
 
 class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
     AVCapturePhotoCaptureDelegate, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate, EasyTipViewDelegate {
@@ -124,7 +125,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 Crashlytics.sharedInstance().recordError(NSError(domain: "AVCaptureDeviceInput error", code: 0,
                                                                  userInfo: ["error": error.localizedDescription]))
             }
-        }
+        }        
         
         #endif
         
@@ -314,7 +315,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if !PermissionViewController.needOneOrMorePermissions() {
+        if !PermissionViewController.needOneOrMorePermissions(includeOptional: false) {
             enableCamera()
         }
     }
@@ -323,7 +324,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         super.viewDidAppear(animated)
         // TODO - also make sure that this handles app foregrounding
 
-        if PermissionViewController.needOneOrMorePermissions() {
+        if PermissionViewController.needOneOrMorePermissions(includeOptional: false) {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let controller = storyboard.instantiateViewController(withIdentifier: "PermissionViewController")
             self.present(controller, animated: true, completion: nil)
@@ -435,7 +436,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // reset model
         self.imageView.image = nil
         self.viewModel.reset()
-
+        
         // hide keyboard, if any
         self.categoryTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
@@ -602,6 +603,27 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
                 }
                 
+                // post a user notification (if notifs are enabled)
+                UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+                    guard settings.authorizationStatus == .authorized else { return }
+                    
+                    print("*** posting notif")
+
+                    let content = UNMutableNotificationContent()
+                    content.title = "Upload successful"
+                    content.body = "Your new report has been submitted to 311!"
+                    
+                    // show immediately
+                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval:0.1, repeats: false)
+                    
+                    let request = UNNotificationRequest(identifier: "ContentIdentifier", content: content, trigger: trigger)
+                    UNUserNotificationCenter.current().add(request) { (error) in
+                        if error != nil {
+                            print("error \(String(describing: error))")
+                        }
+                    }
+                }
+
                 addAndResetReport = true
             }
             
@@ -735,7 +757,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
 
         guard let phAsset = info[UIImagePickerControllerPHAsset] as? PHAsset,
             let coordinate = phAsset.location?.coordinate else {
-                AppDelegate.showSimpleAlertWithOK(vc: self, "The selected photo does not have location information or this app does not have access to your Photo Library.",
+                AppDelegate.showSimpleAlertWithOK(vc: self, "The selected photo does not have location information. Go to Location Services in Settings and make sure that the Camera and Photos apps have \"While Using\" enabled.",
                                                   button2title: "Settings") { (_) in
                          
                     AppDelegate.gotoAppSettings()

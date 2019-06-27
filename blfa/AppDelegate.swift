@@ -86,7 +86,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             This code catches the case where it doesn't (this only seems to be the case for location revocation).
          */
         
-        if PermissionViewController.needOneOrMorePermissions() {
+        if PermissionViewController.needOneOrMorePermissions(includeOptional: false) {
             if let controller = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "PermissionViewController") as? PermissionViewController {
                 if let window = self.window, let rootViewController = window.rootViewController {
                     var currentController = rootViewController

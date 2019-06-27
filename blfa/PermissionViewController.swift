@@ -11,12 +11,14 @@ import CoreLocation
 import Foundation
 import Photos
 import UIKit
+import UserNotifications
 
 enum PermissionButtonType {
     case gotoSettings
     case cameraPermission
     case photosPermission
     case locationPermission
+    case notificationsPermission
 }
 
 class PermissionViewController: UIViewController, CLLocationManagerDelegate {
@@ -29,22 +31,22 @@ class PermissionViewController: UIViewController, CLLocationManagerDelegate {
 
     //MARK:- Lifecycle
     override func viewDidLoad() {
-        assert(PermissionViewController.needOneOrMorePermissions())
+        assert(PermissionViewController.needOneOrMorePermissions(includeOptional: true))
         
         permissionButton.backgroundColor = UIColor.white
         permissionButton.layer.cornerRadius = 10
         permissionButton.clipsToBounds = true
 
-        askForPermissionIfNeeded()
+        askForPermissionIfNeeded(includeOptional: true)
 
         // when we foregound, recheck the needed permissions
         NotificationCenter.default.addObserver(forName: NSNotification.Name.UIApplicationWillEnterForeground, object: nil, queue: nil) { (_) in
-            self.askForPermissionIfNeeded()
+            self.askForPermissionIfNeeded(includeOptional: true)
         }
     }
     
     //MARK:- Internal methods
-    class func getPermissionStatus() -> (cameraStatus: Bool, photosStatus: Bool, locationStatus: Bool) {
+    class func getPermissionStatus(includeOptional: Bool) -> (cameraStatus: Bool, photosStatus: Bool, locationStatus: Bool, notificationStatus: Bool) {
         // AVCaptureDevice
 //        case notDetermined
 //        Explicit user permission is required for media capture, but the user has not yet granted or denied such permission.
@@ -74,16 +76,38 @@ class PermissionViewController: UIViewController, CLLocationManagerDelegate {
 //        case authorizedAlways
 //        This app is authorized to start location services at any time.
 //        case authorizedWhenInUse
+        
+        // UNUserNotificationCenter - OPTIONAL
+//        case notDetermined
+//        The user hasn't yet made a choice about whether the app is allowed to schedule notifications.
+//        case denied
+//        The app isn't authorized to schedule or receive notifications.
+//        case authorized
+//        The app is authorized to schedule or receive notifications.
+//        case provisional
+//        The application is provisionally authorized to post noninterruptive user notifications.
 
+        var userNotificationsAuthorized = false
+        
+        let dispatchGroup = DispatchGroup()
+        dispatchGroup.enter()
+        UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+            userNotificationsAuthorized = (settings.authorizationStatus == .authorized)
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.wait()
         return (AVCaptureDevice.authorizationStatus(for: .video) == .authorized,
             PHPhotoLibrary.authorizationStatus() == PHAuthorizationStatus.authorized,
             CLLocationManager.locationServicesEnabled() == true && (CLLocationManager.authorizationStatus() == .authorizedAlways ||
-                CLLocationManager.authorizationStatus() == .authorizedWhenInUse))
+                CLLocationManager.authorizationStatus() == .authorizedWhenInUse),
+            includeOptional ? userNotificationsAuthorized : true    /* user notifs are optional */
+        )
     }
     
     // stop when we find something that we need
-    func askForPermissionIfNeeded() {
-        let (cameraStatus, photosStatus, locationStatus) = PermissionViewController.getPermissionStatus()
+    func askForPermissionIfNeeded(includeOptional: Bool) {
+        let (cameraStatus, photosStatus, locationStatus, notificationStatus) = PermissionViewController.getPermissionStatus(includeOptional: includeOptional)
 
         let labelTitle = "Welcome to Lane Breach!"
         let labelPrefix = labelTitle + "\n\nLane Breach makes it easy to report bike lane blockages to San Francisco's 311 service."
@@ -164,15 +188,45 @@ class PermissionViewController: UIViewController, CLLocationManagerDelegate {
             permissionImageView.image = UIImage(named: "location_icon")
             return
         }
+        
+        if !notificationStatus {
+            hint = labelPrefix + "\n\nWe use notifications to inform you when reports have been uploaded. This is optional."
+            
+            var authorizationStatus: UNAuthorizationStatus = .denied
+            let dispatchGroup = DispatchGroup()
+            dispatchGroup.enter()
+            UNUserNotificationCenter.current().getNotificationSettings { (settings) in
+                authorizationStatus = settings.authorizationStatus
+                dispatchGroup.leave()
+            }
+            
+            dispatchGroup.wait()
+
+            switch authorizationStatus {
+            case .authorized:
+                assertionFailure()
+            case .notDetermined, .provisional:
+                permissionButtonType = .notificationsPermission
+                permissionButton.setTitle("Allow notifications", for: UIControlState.normal)
+            case .denied:
+                hint! += labelDeniedSuffix
+            }
+            
+            /* user notifs are optional */
+            if authorizationStatus != .denied {
+                permissionImageView.image = UIImage(named: "notifications_icon")
+                return
+            }
+        }
 
         // all done!
         self.dismiss(animated: true)
     }
 
-    class func needOneOrMorePermissions() -> Bool {
-        let (p1, p2, p3) = getPermissionStatus()
+    class func needOneOrMorePermissions(includeOptional: Bool) -> Bool {
+        let (p1, p2, p3, p4) = getPermissionStatus(includeOptional: includeOptional)
 
-        return !p1 || !p2 || !p3
+        return !p1 || !p2 || !p3 || !p4
     }
 
     //MARK:- Event Handlers
@@ -186,7 +240,7 @@ class PermissionViewController: UIViewController, CLLocationManagerDelegate {
         case .cameraPermission:
             AVCaptureDevice.requestAccess(for: .video) { success in
                 DispatchQueue.main.async {
-                    self.askForPermissionIfNeeded()
+                    self.askForPermissionIfNeeded(includeOptional: true)
                 }
             }
         case .locationPermission:
@@ -195,7 +249,13 @@ class PermissionViewController: UIViewController, CLLocationManagerDelegate {
         case .photosPermission:
             PHPhotoLibrary.requestAuthorization { (status) in
                 DispatchQueue.main.async {
-                    self.askForPermissionIfNeeded()
+                    self.askForPermissionIfNeeded(includeOptional: true)
+                }
+            }
+        case .notificationsPermission:
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert]) { (result, error) in
+                DispatchQueue.main.async {
+                    self.askForPermissionIfNeeded(includeOptional: true)
                 }
             }
         case .gotoSettings:
@@ -205,6 +265,6 @@ class PermissionViewController: UIViewController, CLLocationManagerDelegate {
 
     //MARK:- CLLocationManagerDelegate methods
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        self.askForPermissionIfNeeded()
+        self.askForPermissionIfNeeded(includeOptional: true)
     }
 }
