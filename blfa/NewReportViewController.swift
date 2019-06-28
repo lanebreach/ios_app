@@ -46,7 +46,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     @IBOutlet weak var changePhotoButton: UIButton!
     @IBOutlet weak var postReportButton: UIButton!
     
-    var viewModel: NewReportViewModel!
+    lazy var viewModel = NewReportViewModel()
     
     // credit: https://medium.com/@rizwanm/https-medium-com-rizwanm-swift-camera-part-1-c38b8b773b2
     var captureDevice: AVCaptureDevice?
@@ -225,9 +225,6 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     override func viewDidLoad() {
         // this is the first screen that is shown, so let's update the tab bar style here
         NetworkManager.shared.updateTabBarStyleForCurrentServer(vc: self)
-        
-        // model
-        viewModel = NewReportViewModel()
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
@@ -591,8 +588,41 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     eventDomain = "NetworkManagerSuccess"
                 }
                 
-                // report successful upload
-                Answers.logCustomEvent(withName: eventDomain, customAttributes: ["uploadAttempts": self.uploadAttempts])
+                // report successful upload to Fabric
+                var customAttributes: [String: Any] = [ "uploadAttempts": self.uploadAttempts]
+                if let imageSourceCamera = self.viewModel.imageSourceCamera.value {
+                    customAttributes["imageSourceCamera"] = imageSourceCamera ? "true" : "false"
+                }
+                if let imageSourceDate = self.viewModel.imageDate.value {
+                    // use logarithmic scale for time delta
+                    //log(1.0 or 1 sec) = 0
+                    //log(2.7 or 2 sec) = 1
+                    //log(7.4 or 7 sec) = 2
+                    //log(20.1 or 20 sec) = 3
+                    //log(54.6 or 54 sec) = 4
+                    //log(148.4 or 2.5 min) = 5
+                    //log(403.4 or 6.7 min) = 6
+                    //log(1096.6 or 18.3 min) = 7
+                    //log(2981.0 or 49.7 min) = 8
+                    //log(8103.1 or 2.3 hours) = 9
+                    //log(22026.5 or 6.1 hours) = 10
+                    //log(59874.1 or 16.6 hours) = 11
+                    //log(162754.8 or 1.9 days) = 12
+                    //log(442413.4 or 5.1 days) = 13
+                    //log(1202604.3 or 13.9 days) = 14
+                    //log(3269017.4 or 37.8 days) = 15
+                    //log(8886110.5 or 102.8 days) = 16
+                    //log(24154952.8 or 279.6 days) = 17
+                    //log(65659969.1 or 760.0 days) = 18
+                    //log(178482301.0 or 2065.8 days) = 19
+                    let timeDelta = Date().timeIntervalSince(imageSourceDate)
+                    if timeDelta > 0 {
+                        customAttributes["imageTimeDelta"] = NSNumber(integerLiteral: Int(round(log(timeDelta + 1))))
+                    }
+                }
+                Answers.logCustomEvent(withName: eventDomain, customAttributes: customAttributes)
+                
+                // (1) alert to user
                 if self.showDebugMessages {
                     if let serviceRequestId = serviceRequestId {
                         AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311 with service request ID \(serviceRequestId)")
@@ -603,11 +633,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                     AppDelegate.showSimpleAlertWithOK(vc: self, "New request submitted to 311!")
                 }
                 
-                // post a user notification (if notifs are enabled)
+                // (2) post a user notification (if notifs are enabled)
                 UNUserNotificationCenter.current().getNotificationSettings { (settings) in
                     guard settings.authorizationStatus == .authorized else { return }
-                    
-                    print("*** posting notif")
 
                     let content = UNMutableNotificationContent()
                     content.title = "Upload successful"
@@ -735,6 +763,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
             self.startUpdatingLocation(showAlertOnError: false)
         }
         
+        self.viewModel.imageSourceCamera.value = true
+        self.viewModel.imageDate.value = Date()
+
         self.uploadAttempts = 0
     }
     
@@ -780,6 +811,9 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         // tell the model that we have an image
         self.viewModel.haveImage.value = .libraryPhoto
         self.viewModel.imageLocation.value = coordinate
+        self.viewModel.imageSourceCamera.value = false
+        self.viewModel.imageDate.value = phAsset.creationDate   // might be nil
+        
         updateLocationIcon(found: true)
         self.uploadAttempts = 0
     }

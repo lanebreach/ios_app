@@ -29,6 +29,8 @@ class NewReportViewModel {
     let description: MutableProperty<String>
     let haveImage: MutableProperty<PendingImageType>
     let imageLocation: MutableProperty<CLLocationCoordinate2D?>
+    let imageSourceCamera: MutableProperty<Bool?>
+    let imageDate: MutableProperty<Date?>
     
     var categorySignal: Signal<String, NoError>
     var descriptionSignal: Signal<String, NoError>
@@ -48,6 +50,8 @@ class NewReportViewModel {
         self.category = MutableProperty("")
         self.haveImage = MutableProperty(.none)
         self.imageLocation = MutableProperty(nil)
+        self.imageSourceCamera = MutableProperty(nil)
+        self.imageDate = MutableProperty(nil)
         
         self.categorySignal = self.category.signal
         self.descriptionSignal = self.description.signal
@@ -78,6 +82,8 @@ class NewReportViewModel {
     func reset() {
         self.haveImage.value = .none
         self.imageLocation.value = nil
+        self.imageSourceCamera.value = nil
+        self.imageDate.value = nil
         self.category.value = NewReportViewModel.defaultCategory
         self.description.value = ""
     }
