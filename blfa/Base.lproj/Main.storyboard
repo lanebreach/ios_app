@@ -303,18 +303,17 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bikelane1" translatesAutoresizingMaskIntoConstraints="NO" id="JOP-fe-TgW">
-                                <rect key="frame" x="0.0" y="-14.5" width="375" height="667"/>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="bikelane1" translatesAutoresizingMaskIntoConstraints="NO" id="JOP-fe-TgW">
+                                <rect key="frame" x="0.0" y="-13.5" width="375" height="667"/>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="faP-Fl-ur2">
-                                <rect key="frame" x="16" y="28" width="343" height="181.5"/>
-                                <string key="text">Lane Breach makes it easy to report bike lane blockages to San Francisco's 311 service: just take a picture, select a category (Uber, bus, etc), enter an optional description and press SEND.</string>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Lane Breach makes it easy to report bike lane blockages to San Francisco's 311 service." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="faP-Fl-ur2">
+                                <rect key="frame" x="16" y="28" width="343" height="61"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9WT-HN-TWF" userLabel="Email View">
-                                <rect key="frame" x="8" y="217.5" width="359" height="203"/>
+                                <rect key="frame" x="8" y="97" width="359" height="203"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="User information" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H8D-zM-43b">
                                         <rect key="frame" x="8" y="8" width="343" height="21"/>
@@ -406,12 +405,46 @@
                                 </constraints>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1iN-j6-ZhF">
-                                <rect key="frame" x="16" y="420.5" width="343" height="44"/>
+                                <rect key="frame" x="16" y="300" width="343" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="9Rq-2f-o3c"/>
                                 </constraints>
                                 <attributedString key="attributedText">
+                                    <fragment content="How to use Lane Breach">
+                                        <attributes>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <font key="NSFont" size="18" name="HelveticaNeue"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                            <integer key="NSUnderline" value="1"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iad-Kp-w7X">
+                                <rect key="frame" x="16" y="344" width="343" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="SWP-xO-gSd"/>
+                                </constraints>
+                                <attributedString key="attributedText">
                                     <fragment content="Clear uploaded reports">
+                                        <attributes>
+                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <font key="NSFont" size="18" name="HelveticaNeue"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                            <integer key="NSUnderline" value="1"/>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aJU-pT-Fnh">
+                                <rect key="frame" x="16" y="388" width="343" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="44" id="tZ8-73-Au0"/>
+                                </constraints>
+                                <attributedString key="attributedText">
+                                    <fragment content="Restore all hints">
                                         <attributes>
                                             <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             <font key="NSFont" size="18" name="HelveticaNeue"/>
@@ -435,23 +468,6 @@
                                     <constraint firstAttribute="width" constant="32" id="D8r-KB-Xo5"/>
                                 </constraints>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aJU-pT-Fnh">
-                                <rect key="frame" x="16" y="464.5" width="343" height="44"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="44" id="tZ8-73-Au0"/>
-                                </constraints>
-                                <attributedString key="attributedText">
-                                    <fragment content="Restore all hints">
-                                        <attributes>
-                                            <color key="NSColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            <font key="NSFont" size="18" name="HelveticaNeue"/>
-                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                            <integer key="NSUnderline" value="1"/>
-                                        </attributes>
-                                    </fragment>
-                                </attributedString>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -462,10 +478,9 @@
                             <constraint firstItem="1iN-j6-ZhF" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="A3e-VM-X1e"/>
                             <constraint firstItem="1iN-j6-ZhF" firstAttribute="top" secondItem="9WT-HN-TWF" secondAttribute="bottom" id="DSV-1A-5vh"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="V40-sU-3Z4" secondAttribute="trailing" id="EQ8-EC-nZh"/>
+                            <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="Iad-Kp-w7X" secondAttribute="trailing" constant="16" id="Eba-oM-6An"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="width" secondItem="v6B-Zl-xuk" secondAttribute="width" id="JzW-Gs-q9k"/>
-                            <constraint firstItem="aJU-pT-Fnh" firstAttribute="top" secondItem="1iN-j6-ZhF" secondAttribute="bottom" id="NFD-Hb-QzJ"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="bottom" secondItem="8Eu-0z-CDl" secondAttribute="bottom" constant="11" id="Ok7-Up-WOa"/>
-                            <constraint firstItem="9WT-HN-TWF" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="Qjf-1Q-fm8"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="trailing" secondItem="GjX-cO-dCU" secondAttribute="trailing" constant="-8" id="RLc-aA-UVJ"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="1iN-j6-ZhF" secondAttribute="trailing" constant="16" id="RiY-1J-225"/>
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="aJU-pT-Fnh" secondAttribute="trailing" constant="16" id="V0j-Rr-soJ"/>
@@ -473,10 +488,13 @@
                             <constraint firstItem="GjX-cO-dCU" firstAttribute="trailing" secondItem="8Eu-0z-CDl" secondAttribute="trailing" constant="16" id="hKr-Ns-1Ya"/>
                             <constraint firstItem="faP-Fl-ur2" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="i8o-4B-uHR"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="centerY" secondItem="GjX-cO-dCU" secondAttribute="centerY" id="iAt-j1-TdZ"/>
+                            <constraint firstItem="Iad-Kp-w7X" firstAttribute="top" secondItem="1iN-j6-ZhF" secondAttribute="bottom" id="kvX-ct-E5f"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="top" secondItem="faP-Fl-ur2" secondAttribute="bottom" constant="8" id="nN7-CF-xnn"/>
+                            <constraint firstItem="Iad-Kp-w7X" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="16" id="o2l-Mq-VHl"/>
                             <constraint firstItem="9WT-HN-TWF" firstAttribute="leading" secondItem="GjX-cO-dCU" secondAttribute="leading" constant="8" id="p11-xC-Oyf"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="height" secondItem="v6B-Zl-xuk" secondAttribute="height" id="wVO-jE-Dza"/>
                             <constraint firstItem="JOP-fe-TgW" firstAttribute="centerX" secondItem="GjX-cO-dCU" secondAttribute="centerX" id="xGw-DI-89h"/>
+                            <constraint firstItem="aJU-pT-Fnh" firstAttribute="top" secondItem="Iad-Kp-w7X" secondAttribute="bottom" id="zfB-Pv-TOg"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="GjX-cO-dCU"/>
                     </view>
@@ -487,8 +505,9 @@
                         <outlet property="emailTextField" destination="lCx-JU-5yJ" id="B22-Xd-6qd"/>
                         <outlet property="nameTextField" destination="86Q-Jd-PgA" id="X3p-uh-l3u"/>
                         <outlet property="phoneTextField" destination="fMN-ni-pfm" id="JCn-Ck-aCW"/>
-                        <outlet property="resetReportsLabel" destination="1iN-j6-ZhF" id="2ZE-By-633"/>
+                        <outlet property="resetReportsLabel" destination="Iad-Kp-w7X" id="3lh-Jh-eTd"/>
                         <outlet property="resetTipsLabel" destination="aJU-pT-Fnh" id="4oF-gL-pi6"/>
+                        <outlet property="showHelpLabel" destination="1iN-j6-ZhF" id="1mM-86-jxN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="voY-UU-bvM" userLabel="First Responder" sceneMemberID="firstResponder"/>

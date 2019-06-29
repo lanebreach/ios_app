@@ -8,12 +8,14 @@
 
 import Crashlytics
 import Fabric
+import SafariServices
 import UIKit
 
 class SettingsViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var nameTextField: UITextField!
     @IBOutlet weak var phoneTextField: UITextField!
+    @IBOutlet weak var showHelpLabel: UILabel!
     @IBOutlet weak var resetReportsLabel: UILabel!
     @IBOutlet weak var resetTipsLabel: UILabel!
     @IBOutlet weak var appVersionLabel: UILabel!
@@ -30,7 +32,12 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
         view.addSubview(button)
         #endif
 
-        var tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetReportsAction(sender:)))
+        var tapper = UITapGestureRecognizer(target:self, action:#selector(self.showHelpAction(sender:)))
+        tapper.numberOfTouchesRequired = 1
+        showHelpLabel.isUserInteractionEnabled = true
+        showHelpLabel.addGestureRecognizer(tapper)
+
+        tapper = UITapGestureRecognizer(target:self, action:#selector(self.resetReportsAction(sender:)))
         tapper.numberOfTouchesRequired = 1
         resetReportsLabel.isUserInteractionEnabled = true
         resetReportsLabel.addGestureRecognizer(tapper)
@@ -84,6 +91,13 @@ class SettingsViewController: UIViewController, UITextFieldDelegate {
     }
     #endif
 
+    @objc func showHelpAction(sender: UITapGestureRecognizer?) {
+        if let url = URL(string: "https://www.lanebreach.org/mobilehelp") {
+            let vc = SFSafariViewController(url: url, entersReaderIfAvailable: true)
+            present(vc, animated: true)
+        }
+    }
+    
     @objc func resetReportsAction(sender: UITapGestureRecognizer?) {
         AppDelegate.showSimpleAlertWithOK(vc: self, "Touch Reset to clear your list of previously uploaded reports from the Reports screen. This does not affect reports uploaded to 311.",
                                           button2title: "Reset") { (_) in
