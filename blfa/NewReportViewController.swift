@@ -731,7 +731,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         captureSession?.stopRunning()
         
         // Initialise a UIImage with our image data
-        guard let capturedImage = UIImage.init(data: imageData , scale: 1.0),
+        guard let capturedImage = UIImage(data: imageData , scale: 1.0),
             let fixedImage = fixOrientation(img: capturedImage) else {
                 
                 AppDelegate.showSimpleAlertWithOK(vc: self, "Error capturing image (failed to fix orientation)")

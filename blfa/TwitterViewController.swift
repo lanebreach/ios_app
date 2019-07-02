@@ -169,7 +169,7 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
                                                            height: CGFloat.greatestFiniteMagnitude))
                 label.numberOfLines = 0
                 label.lineBreakMode = NSLineBreakMode.byWordWrapping
-                label.font = UIFont.init(name: "Helvetica Neue", size: 15.0)
+                label.font = UIFont(name: "Helvetica Neue", size: 15.0)
                 label.text = description
                 label.sizeToFit()
                 

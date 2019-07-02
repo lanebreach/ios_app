@@ -244,6 +244,15 @@ class NetworkManager {
         self.endUploadReportTask()
     }
     
+    // credit: https://stackoverflow.com/questions/31314412/how-to-resize-image-in-swift
+    func scaledImage(with image: UIImage, scaledTo newSize: CGSize) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+        image.draw(in: CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage
+    }
+    
     func uploadReport(image: UIImage, filename: String, location: CLLocationCoordinate2D,
                       emailAddress: String?, fullName: String?, phoneNumber: String?,
                       category: String, description: String,
@@ -255,10 +264,23 @@ class NetworkManager {
             return
         }
         
+        print("original size: \(UIImagePNGRepresentation(image)!.count) bytes")
+        
+        // keep image size down
+        var imageToUpload = image
+        if image.size.width > 500 /* arbitrary */ {
+            let scaleFactor = 500.0/image.size.width
+            if let image = scaledImage(with: image, scaledTo: CGSize(width: image.size.width*scaleFactor, height: image.size.height*scaleFactor)) {
+                imageToUpload = image
+
+                print("scaled size: \(UIImagePNGRepresentation(image)!.count) bytes")
+            }
+        }
+        
         uploadReportCompletion = completion
         beginUploadReportTask()
         progressMessage("Uploading image")
-        self.uploadImage(with: UIImagePNGRepresentation(image)!, filename: filename) { (error) in
+        self.uploadImage(with: UIImagePNGRepresentation(imageToUpload)!, filename: filename) { (error) in
             print("\(Date().timeIntervalSince1970) start metadata upload")
             if let error = error {
                 self.reportCompletionAndEndUploadReportTask(nil, nil, NetworkManagerError(.imageUploadFailed, description: "error='\(error)'"))
