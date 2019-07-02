@@ -3,10 +3,20 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.2.0 (1)
+- twitter screen - added progress indicator when the screen is initially loading
+- settings screen - added "How to use Lane Breach" action which takes the user to a web help screen; dismiss keyboard if user touches anywhere on the screen
+- new report screen - make sure that we keep the picker in sync with the current category (this is only used after previously-uploaded report's category is reset)
+- fix bug where the last character of a user-entered description would not be submitted to 311
+- shrink images more than 500px wide to make 'em smaller for uploading
+- added imageSourceCamera (true/false) and imageTimeDelta (natural log of time since the picture was taken in seconds) to NetworkManagerSuccess events
+- added user notifications after a report is uploaded (including a new optional permission)
+- new app icons
+
 ## 1.1.0 (1)
-- permissions screen: new screen that replaces random permission popups during app launch and makes it easier (in theory) to recover from a revoked permission while the app is running
-- new report screen: added 1/2/4X zoom function; added white shadows to black icons so they're easier to see at night; hide cursor on text field when category picker is showing; moved Other to the top of the list.
-- twitter screen: new screen that shows @EverySF311Bike's feed with the user's reports marked with a star
+- permissions screen - new screen that replaces random permission popups during app launch and makes it easier (in theory) to recover from a revoked permission while the app is running
+- new report screen - added 1/2/4X zoom function; added white shadows to black icons so they're easier to see at night; hide cursor on text field when category picker is showing; moved Other to the top of the list.
+- twitter screen - new screen that shows @EverySF311Bike's feed with the user's reports marked with a star
 - always prepend [Other] before submitted descriptions if a category is not picked
 - switch to custom Fabric events to report successful report delivery to 311
 
