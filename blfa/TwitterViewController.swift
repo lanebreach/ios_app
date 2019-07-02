@@ -23,6 +23,7 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
     @IBOutlet weak var laneBreachIconView: UIView!
     @IBOutlet weak var communityIconView: UIView!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var activityIndicatorView: UIActivityIndicatorView!
     
     let cellReuseIdentifier = "TweetCell"
     var tweets : [JSON]?
@@ -56,6 +57,9 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.addSubview(self.refreshControl)
         tableView.backgroundColor = AppDelegate.brandColor(purpose: .communityFeedItems)
         tableView.separatorStyle = .none
+        
+        // show on first load only
+        activityIndicatorView.startAnimating()
         
         refreshTweets()
     }
@@ -104,9 +108,13 @@ class TwitterViewController: UIViewController, UITableViewDataSource, UITableVie
             self.tweets = json.array
             self.tableView.reloadData()
             self.refreshControl.endRefreshing()
+            self.activityIndicatorView.stopAnimating()
+            self.activityIndicatorView.isHidden = true
             self.refreshingTweets = false
         }, failure: { error in
             print("error \(error)")
+            self.activityIndicatorView.stopAnimating()
+            self.activityIndicatorView.isHidden = true
             self.refreshingTweets = false
         })
     }

@@ -668,6 +668,9 @@
                                     <outlet property="delegate" destination="MsS-N6-ZgG" id="yps-x5-An6"/>
                                 </connections>
                             </tableView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="Xd2-Au-YmI">
+                                <rect key="frame" x="169" y="322.5" width="37" height="37"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="0.20000000000000001" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -675,7 +678,9 @@
                             <constraint firstItem="3PV-X8-and" firstAttribute="leading" secondItem="2OJ-Ww-gNi" secondAttribute="leading" id="K4w-jm-j4S"/>
                             <constraint firstItem="2OJ-Ww-gNi" firstAttribute="trailing" secondItem="3PV-X8-and" secondAttribute="trailing" id="Qye-jh-qim"/>
                             <constraint firstItem="2OJ-Ww-gNi" firstAttribute="trailing" secondItem="6qk-Wq-zBG" secondAttribute="trailing" id="XB0-7G-gcb"/>
+                            <constraint firstItem="Xd2-Au-YmI" firstAttribute="centerY" secondItem="6qk-Wq-zBG" secondAttribute="centerY" id="fNj-tk-Q1J"/>
                             <constraint firstItem="6qk-Wq-zBG" firstAttribute="top" secondItem="3PV-X8-and" secondAttribute="bottom" id="fSf-2t-uD5"/>
+                            <constraint firstItem="Xd2-Au-YmI" firstAttribute="centerX" secondItem="6qk-Wq-zBG" secondAttribute="centerX" id="lj2-Zc-Adm"/>
                             <constraint firstItem="6qk-Wq-zBG" firstAttribute="leading" secondItem="2OJ-Ww-gNi" secondAttribute="leading" id="xmL-hs-F6a"/>
                             <constraint firstItem="3PV-X8-and" firstAttribute="top" secondItem="2OJ-Ww-gNi" secondAttribute="top" id="zhv-cn-iQQ"/>
                         </constraints>
@@ -683,6 +688,7 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="Feed" image="twitter_icon" id="27C-qY-BGX"/>
                     <connections>
+                        <outlet property="activityIndicatorView" destination="Xd2-Au-YmI" id="4AG-Pt-Z73"/>
                         <outlet property="communityIconView" destination="NvK-Fc-bgQ" id="HjZ-93-OOO"/>
                         <outlet property="laneBreachIconView" destination="wNT-BO-Bet" id="Rwu-U0-FyL"/>
                         <outlet property="tableView" destination="6qk-Wq-zBG" id="XBU-bW-Y3W"/>
