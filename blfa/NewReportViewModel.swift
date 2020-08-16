@@ -26,6 +26,7 @@ class NewReportViewModel {
     let phoneNumber: MutableProperty<String?>
     
     let category: MutableProperty<String>
+    let license: MutableProperty<String>
     let description: MutableProperty<String>
     let haveImage: MutableProperty<PendingImageType>
     let imageLocation: MutableProperty<CLLocationCoordinate2D?>
@@ -33,6 +34,7 @@ class NewReportViewModel {
     let imageDate: MutableProperty<Date?>
     
     var categorySignal: Signal<String, NoError>
+    var licenseSignal: Signal<String, NoError>
     var descriptionSignal: Signal<String, NoError>
     var okToSendSignal: Signal<Bool, NoError>
     var locationStatusSignal: Signal<Bool, NoError>
@@ -46,14 +48,16 @@ class NewReportViewModel {
         self.fullName = MutableProperty(nil)
         self.phoneNumber = MutableProperty(nil)
         
-        self.description = MutableProperty("")
         self.category = MutableProperty("")
+        self.license = MutableProperty("")
+        self.description = MutableProperty("")
         self.haveImage = MutableProperty(.none)
         self.imageLocation = MutableProperty(nil)
         self.imageSourceCamera = MutableProperty(nil)
         self.imageDate = MutableProperty(nil)
         
         self.categorySignal = self.category.signal
+        self.licenseSignal = self.license.signal
         self.descriptionSignal = self.description.signal
         
         // output true if the email address has 3+ chars and we have a valid category/image/location
@@ -85,6 +89,7 @@ class NewReportViewModel {
         self.imageSourceCamera.value = nil
         self.imageDate.value = nil
         self.category.value = NewReportViewModel.defaultCategory
+        self.license.value = ""
         self.description.value = ""
     }
 }

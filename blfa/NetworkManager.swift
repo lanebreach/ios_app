@@ -255,7 +255,7 @@ class NetworkManager {
     
     func uploadReport(image: UIImage, filename: String, location: CLLocationCoordinate2D,
                       emailAddress: String?, fullName: String?, phoneNumber: String?,
-                      category: String, description: String,
+                      category: String, license: String, description: String,
                       progressMessage: @escaping (String) -> Void,
                       completion: @escaping (_ serviceRequestId: String?, _ token: String?, _ error: NetworkManagerError?) -> Void) {
         
@@ -294,6 +294,7 @@ class NetworkManager {
             var fullDescription: String = "[\(category)] "
             fullDescription.append(contentsOf: (description.count) != 0 ? description : "Blocked bicycle lane")
             
+            let licensePlate = license.trimmingCharacters(in: .whitespaces)
             var parameters = [
                 "api_key": UserDefaults.standard.bool(forKey: kUserDefaultsUsingDevServerKey) ? Keys.apiKey : Keys.apiKeyProduction,
                 "service_code": "5a6b5ac2d0521c1134854b01",
@@ -301,6 +302,7 @@ class NetworkManager {
                 "long": String(location.longitude),
                 "media_url": mediaUrl,
                 "description": fullDescription,
+                "attribute[txtReg]": (licensePlate.count >= 2 && licensePlate.count <= 7) ? licensePlate : "N/A",
                 "attribute[Nature_of_request]": "Blocking_Bicycle_Lane"
             ]
             

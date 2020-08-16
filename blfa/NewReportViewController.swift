@@ -41,6 +41,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     @IBOutlet weak var controlView: UIView!
     @IBOutlet weak var controlViewToSafeAreaBottomConstraint : NSLayoutConstraint!
     @IBOutlet weak var categoryTextField: UITextField!
+    @IBOutlet weak var licenseTextField: UITextField!
     @IBOutlet weak var descriptionTextField: UITextField!
     @IBOutlet weak var cameraButtonsView: UIView!
     @IBOutlet weak var changePhotoButton: UIButton!
@@ -228,6 +229,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // react to model changes
         self.categoryTextField.reactive.text <~ self.viewModel.categorySignal
+        self.licenseTextField.reactive.text <~ self.viewModel.licenseSignal
         self.descriptionTextField.reactive.text <~ self.viewModel.descriptionSignal
         self.viewModel.locationStatusSignal.observeValues { value in
             print("locationStatusSignal: \(value)")
@@ -260,6 +262,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         self.controlViewToSafeAreaBottomConstraint.constant = -self.controlView.frame.height
         self.controlView.layer.cornerRadius = 5
         self.cameraButtonsView.layer.cornerRadius = 5
+        self.licenseTextField.delegate = self
         self.descriptionTextField.delegate = self
         
         // category picker/toolbar
@@ -436,6 +439,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
         
         // hide keyboard, if any
         self.categoryTextField.resignFirstResponder()
+        self.licenseTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
         
         // show the preview + photo buttons, slide down the control panel
@@ -446,6 +450,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     
     @objc func locationButtonPressed(sender: UITapGestureRecognizer?) {
         self.categoryTextField.resignFirstResponder()
+        self.licenseTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
 
         if self.currentLocation != nil || self.viewModel.imageLocation.value != nil {
@@ -501,6 +506,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
 
     @IBAction func postReportButtonPressed(sender: UIButton) {
         self.categoryTextField.resignFirstResponder()
+        self.licenseTextField.resignFirstResponder()
         self.descriptionTextField.resignFirstResponder()
 
         guard let image = self.imageView.image else {
@@ -537,6 +543,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                                            fullName: self.viewModel.fullName.value,
                                            phoneNumber: self.viewModel.phoneNumber.value,
                                            category: self.viewModel.category.value,
+                                           license: self.viewModel.license.value,
                                            description: self.viewModel.description.value,
                                            progressMessage: { (message) in
                                             self.hud?.textLabel.text = message
@@ -659,6 +666,7 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
                 ReportManager.shared.addReport(location: imageLocation,
                                                description: self.viewModel.description.value,
                                                category: self.viewModel.category.value,
+                                               license: self.viewModel.license.value,
                                                serviceRequestId: serviceRequestId,
                                                token: token,
                                                httpPost: NetworkManager.shared.debugLastHttpPost)
@@ -848,7 +856,11 @@ class NewReportViewController: UIViewController, CLLocationManagerDelegate, UINa
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        self.viewModel.description.value = textField.text ?? ""
+        if textField == self.descriptionTextField {
+            self.viewModel.description.value = textField.text ?? ""
+        } else if textField == self.licenseTextField {
+            self.viewModel.license.value = textField.text ?? ""
+        }
     }
     
     //MARK:- EasyTipViewDelegate

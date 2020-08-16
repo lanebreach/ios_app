@@ -39,7 +39,7 @@ class ReportManager {
         UserDefaults.standard.set(reports, forKey: "reports")
     }
     
-    func addReport(location: CLLocationCoordinate2D, description: String, category: String,
+    func addReport(location: CLLocationCoordinate2D, description: String, category: String, license: String,
                    serviceRequestId: String?, token: String?, httpPost: String?) {
         
         var reports = getReports()
@@ -51,6 +51,7 @@ class ReportManager {
                   "lat" : location.latitude,
                   "long" : location.longitude,
                   "description": description,
+                  "license": license,
                   "category": category] as [String : Any]
         
         // if we get a serviceRequestId and token, just save the former
